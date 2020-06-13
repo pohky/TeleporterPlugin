@@ -37,7 +37,7 @@ namespace TeleporterPlugin {
             if (arg.Equals("help") || string.IsNullOrEmpty(arg) || string.IsNullOrWhiteSpace(arg)) {
                 var helpText = $"{Name} Help:\n" +
 #if DEBUG
-                               "/tp debug - Open the Debug Window" +
+                               "/tp debug - Open the Debug Window\n" +
 #endif
                                "/tp <name> <type>\n" +
                                "name: Aetheryte Name (e.g. New Gridania)\n" +
@@ -55,7 +55,7 @@ namespace TeleporterPlugin {
             }
 
             var list = ParseArguments(arg);
-            var type = list.Last() ?? string.Empty;
+            var type = list.Last() ?? "direct";
             var location = string.Join(" ", list.Take(list.Count - 1));
             if (type.Equals("direct", StringComparison.OrdinalIgnoreCase)) {
                 if (uint.TryParse(location, out var id)) TeleportManager.Teleport(id);
