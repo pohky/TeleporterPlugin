@@ -1,7 +1,7 @@
 {
   "Author": "Pohky",
   "Name": "Teleporter",
-  "Description": "Plugin for Teleport stuff",
+  "Description": "Chat Commands for teleporting to Aetherytes",
   "InternalName": "TeleporterPlugin",
   "AssemblyVersion": "1.0.0.0",
   "RepoUrl": "https://github.com/pohky/TeleporterPlugin",
