@@ -24,53 +24,80 @@ namespace TeleporterPlugin {
         public static IntPtr UiAgentModuleAddress => UiModuleAddress != IntPtr.Zero ? UiModuleAddress + 0xBAB50 : IntPtr.Zero;
 
         public static Dictionary<uint, string> AetheryteNames { get; private set; } = new Dictionary<uint, string>();
-
         public static IEnumerable<TeleportLocation> AvailableLocations => GetAvailableLocations();
+        public static event Action<string> LogEvent;
+        public static event Action<string> LogErrorEvent;
+
+        #region Teleport
 
         public static void Teleport(uint aetheryteId) {
-            var location = GetAvailableLocations().FirstOrDefault(o => o.AetheryteId == aetheryteId);
-            if (location.AetheryteId <= 0) {
-                PluginLog.LogError($"No valid Aetheryte found for ID '{aetheryteId}'.");
-                return;
-            }
+            var location = GetLocationById(aetheryteId);
+            if (!location.HasValue) return;
             GetDirectTeleport(location)?.Execute();
         }
 
         public static void Teleport(string aetheryteName, bool matchPartial = true) {
-            var location = GetAvailableLocations().FirstOrDefault(o => 
-                    o.Name.Equals(aetheryteName, StringComparison.OrdinalIgnoreCase) ||
-                    matchPartial && o.Name.ToUpper().StartsWith(aetheryteName.ToUpper()));
-            if (location.AetheryteId <= 0) {
-                PluginLog.LogError($"No valid Aetheryte found for '{aetheryteName}'.");
-                return;
-            }
+            var location = GetLocationByName(aetheryteName, matchPartial);
+            if(!location.HasValue) return;
             GetDirectTeleport(location)?.Execute();
         }
 
-        #region GetTeleport
+        public static void TeleportTicket(uint aetheryteId) {
+            var location = GetLocationById(aetheryteId);
+            if (!location.HasValue) return;
+            GetTicketTeleport(location)?.Execute();
+        }
+
+        public static void TeleportTicket(string aetheryteName, bool matchPartial = true) {
+            var location = GetLocationByName(aetheryteName, matchPartial);
+            if (!location.HasValue) return;
+            GetTicketTeleport(location)?.Execute();
+        }
+
+        public static void TeleportMap(uint aetheryteId) {
+            var location = GetLocationById(aetheryteId);
+            if (!location.HasValue) return;
+            GetMapTeleport(location)?.Execute();
+        }
+
+        public static void TeleportMap(string aetheryteName, bool matchPartial = true) {
+            var location = GetLocationByName(aetheryteName, matchPartial);
+            if (!location.HasValue) return;
+            GetMapTeleport(location)?.Execute();
+        }
+
+        #endregion
+
+        #region GetTeleportAction
 
         public static TeleportAction GetDirectTeleport(TeleportLocation? location) {
-            if (!location.HasValue) return null;
+            if (!location.HasValue || location.Value.AetheryteId <= 0)
+                return TeleportAction.Invalid;
             return new TeleportAction(location.Value, () => {
-                PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
+                //PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
+                LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
                 _teleportDirect?.Invoke(0xCA, location.Value.AetheryteId, 0, location.Value.SubIndex, 0);
             });
         }
 
         public static TeleportAction GetTicketTeleport(TeleportLocation? location) {
-            if (!location.HasValue) return null;
+            if (!location.HasValue || location.Value.AetheryteId <= 0)
+                return TeleportAction.Invalid;
             return new TeleportAction(location.Value, () => {
-                PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
+                //PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
+                LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
                 _teleportWithTicket?.Invoke(AvailableLocationsAddress, location.Value.AetheryteId, 0);
             });
         }
 
         public static TeleportAction GetMapTeleport(TeleportLocation? location) {
-            if (!location.HasValue) return null;
+            if (!location.HasValue || location.Value.AetheryteId <= 0)
+                return TeleportAction.Invalid;
             return new TeleportAction(location.Value, () => {
                 var agent = GetAgentInterfaceById(0x22) ?? IntPtr.Zero;
                 if(agent == IntPtr.Zero) return;
-                PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
+                //PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
+                LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
                 _teleportWithMapClick?.Invoke(agent, 3, location.Value.AetheryteId, 0xFF);
             });
         }
@@ -78,6 +105,24 @@ namespace TeleporterPlugin {
         #endregion
 
         #region Helpers
+
+        public static TeleportLocation? GetLocationByName(string aetheryteName, bool matchPartial = true) {
+            var location = GetAvailableLocations().FirstOrDefault(o =>
+                o.Name.Equals(aetheryteName, StringComparison.OrdinalIgnoreCase) ||
+                matchPartial && o.Name.ToUpper().StartsWith(aetheryteName.ToUpper()));
+            if (location.AetheryteId > 0) return location;
+            LogErrorEvent?.Invoke($"No valid Aetheryte found for '{aetheryteName}'.");
+            //PluginLog.LogError($"No valid Aetheryte found for '{aetheryteName}'.");
+            return null;
+        }
+
+        public static TeleportLocation? GetLocationById(uint aetheryteId) {
+            var location = GetAvailableLocations().FirstOrDefault(o => o.AetheryteId == aetheryteId);
+            if (location.AetheryteId > 0) return location;
+            LogErrorEvent?.Invoke($"No valid Aetheryte found for ID '{aetheryteId}'.");
+            //PluginLog.LogError($"No valid Aetheryte found for ID '{aetheryteId}'.");
+            return null;
+        }
 
         private static IEnumerable<TeleportLocation> GetAvailableLocations() {
             var ptr = _getAvalibleLocationList?.Invoke(AvailableLocationsAddress, 0) ?? IntPtr.Zero;

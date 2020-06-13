@@ -30,11 +30,17 @@ namespace TeleporterPlugin {
                 ImGui.TextUnformatted($"KnownLocations: {TeleportManager.AvailableLocationsAddress.ToInt64():X8}");
                 ImGui.Separator();
                 
-                if (ImGui.Button("Update List")) 
+                if (ImGui.Button("GetList")) 
                     _availableLocations = TeleportManager.AvailableLocations.Select(o => o.Name).ToArray();
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport")) 
                     TeleportManager.Teleport(_availableLocations[_currentSelection]);
+                ImGui.SameLine();
+                if (ImGui.Button("Teleport (Ticket)"))
+                    TeleportManager.TeleportTicket(_availableLocations[_currentSelection]);
+                ImGui.SameLine();
+                if (ImGui.Button("Teleport (Map)"))
+                    TeleportManager.TeleportMap(_availableLocations[_currentSelection]);
 
                 ImGui.SetNextItemWidth(ImGui.GetWindowWidth() - 15);
                 ImGui.ListBox("", ref _currentSelection, _availableLocations, _availableLocations.Length, 8);

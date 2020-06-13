@@ -14,7 +14,19 @@ namespace TeleporterPlugin {
             Interface = pluginInterface;
             Gui = new PluginUi(this);
             TeleportManager.Init(Interface);
+            TeleportManager.LogEvent += TeleportManagerOnLogEvent;
+            TeleportManager.LogErrorEvent += TeleportManagerOnLogErrorEvent;
             Interface.CommandManager.AddHandler(CommandName, new CommandInfo(CommandHandler) {HelpMessage = HelpMessage});
+        }
+
+        private void TeleportManagerOnLogEvent(string message) {
+            PluginLog.Log(message);
+            Interface.Framework.Gui.Chat.Print(message);
+        }
+
+        private void TeleportManagerOnLogErrorEvent(string message) {
+            PluginLog.LogError(message);
+            Interface.Framework.Gui.Chat.PrintError(message);
         }
 
         private void CommandHandler(string command, string arguments) {
@@ -34,8 +46,10 @@ namespace TeleporterPlugin {
         }
 
         public void Dispose() {
-            Gui?.Dispose();
+            TeleportManager.LogEvent -= TeleportManagerOnLogEvent;
+            TeleportManager.LogErrorEvent -= TeleportManagerOnLogErrorEvent;
             Interface.CommandManager.RemoveHandler(CommandName);
+            Gui?.Dispose();
         }
     }
 }
