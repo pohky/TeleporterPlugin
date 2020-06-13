@@ -53,7 +53,7 @@ namespace TeleporterPlugin {
             if (!location.HasValue) return null;
             return new TeleportAction(location.Value, () => {
                 PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
-                _teleportDirect(0xCA, location.Value.AetheryteId, 0, location.Value.SubIndex, 0);
+                _teleportDirect?.Invoke(0xCA, location.Value.AetheryteId, 0, location.Value.SubIndex, 0);
             });
         }
 
@@ -61,17 +61,17 @@ namespace TeleporterPlugin {
             if (!location.HasValue) return null;
             return new TeleportAction(location.Value, () => {
                 PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
-                _teleportWithTicket(AvailableLocationsAddress, location.Value.AetheryteId, 0);
+                _teleportWithTicket?.Invoke(AvailableLocationsAddress, location.Value.AetheryteId, 0);
             });
         }
 
         public static TeleportAction GetMapTeleport(TeleportLocation? location) {
             if (!location.HasValue) return null;
             return new TeleportAction(location.Value, () => {
-                var agent = GetAgentInterfaceById(0x22);
-                if(!agent.HasValue) return;
+                var agent = GetAgentInterfaceById(0x22) ?? IntPtr.Zero;
+                if(agent == IntPtr.Zero) return;
                 PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
-                _teleportWithMapClick(agent.Value, 3, location.Value.AetheryteId, 0xFF);
+                _teleportWithMapClick?.Invoke(agent, 3, location.Value.AetheryteId, 0xFF);
             });
         }
 
@@ -80,7 +80,7 @@ namespace TeleporterPlugin {
         #region Helpers
 
         private static IEnumerable<TeleportLocation> GetAvailableLocations() {
-            var ptr = _getAvalibleLocationList(AvailableLocationsAddress, 0);
+            var ptr = _getAvalibleLocationList?.Invoke(AvailableLocationsAddress, 0) ?? IntPtr.Zero;
             if (ptr == IntPtr.Zero) yield break;
 
             var start = Marshal.ReadIntPtr(ptr, 0);
