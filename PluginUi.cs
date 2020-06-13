@@ -8,7 +8,7 @@ namespace TeleporterPlugin {
         private readonly TeleporterPlugin _plugin;
         public bool DebugVisible;
 
-        private string[] _availableLocations = {"Empty"};
+        private string[] _availableLocations = {"Empty List"};
         private int _currentSelection;
 
         public PluginUi(TeleporterPlugin plugin) {
