@@ -27,7 +27,7 @@ namespace TeleporterPlugin {
         public static IEnumerable<TeleportLocation> AvailableLocations => GetAvailableLocations();
         public static event Action<string> LogEvent;
         public static event Action<string> LogErrorEvent;
-
+        
         #region Teleport
 
         public static void Teleport(uint aetheryteId) {
@@ -106,13 +106,31 @@ namespace TeleporterPlugin {
 
         #region Helpers
 
+        internal static string GetNameForLocation(TeleportLocation location) {
+            if (!AetheryteNames.TryGetValue(location.AetheryteId, out var name))
+                return string.Empty;
+            if (!name.Equals("Estate Hall (Private)", StringComparison.OrdinalIgnoreCase))
+                return name;
+            switch (location.SubIndex) {
+                case 0: 
+                    name = "Estate Hall (Private)"; break;
+                case 128: 
+                    name = "Apartment"; break;
+                case var n when n >= 1 && n <= 127: 
+                    name = $"Shared Estate ({location.SubIndex})"; break;
+                default:
+                    name = $"Estate Hall ({(location.AetheryteId * 397) ^ location.SubIndex})";
+                    break;
+            }
+            return name;
+        }
+
         public static TeleportLocation? GetLocationByName(string aetheryteName, bool matchPartial = true) {
             var location = GetAvailableLocations().FirstOrDefault(o =>
                 o.Name.Equals(aetheryteName, StringComparison.OrdinalIgnoreCase) ||
                 matchPartial && o.Name.ToUpper().StartsWith(aetheryteName.ToUpper()));
             if (location.AetheryteId > 0) return location;
             LogErrorEvent?.Invoke($"No valid Aetheryte found for '{aetheryteName}'.");
-            //PluginLog.LogError($"No valid Aetheryte found for '{aetheryteName}'.");
             return null;
         }
 
@@ -120,7 +138,6 @@ namespace TeleporterPlugin {
             var location = GetAvailableLocations().FirstOrDefault(o => o.AetheryteId == aetheryteId);
             if (location.AetheryteId > 0) return location;
             LogErrorEvent?.Invoke($"No valid Aetheryte found for ID '{aetheryteId}'.");
-            //PluginLog.LogError($"No valid Aetheryte found for ID '{aetheryteId}'.");
             return null;
         }
 
@@ -160,6 +177,8 @@ namespace TeleporterPlugin {
             aetherytes.GetRows().ForEach(data => {
                 var name = data.PlaceName?.Value.Name;
                 if(string.IsNullOrEmpty(name) || data.RowId <= 0) return;
+                if (name.IndexOf('<') != -1)
+                    name = name.Replace("<Emphasis>", "");
                 if(!AetheryteNames.ContainsKey(data.RowId))
                     AetheryteNames.Add(data.RowId, name);
             });

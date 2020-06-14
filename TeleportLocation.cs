@@ -8,6 +8,7 @@ namespace TeleporterPlugin {
         [FieldOffset(8)] public readonly ushort ZoneId;
         [FieldOffset(13)] public readonly byte SubIndex;
 
-        public string Name => TeleportManager.AetheryteNames.TryGetValue(AetheryteId, out var name) ? name : string.Empty;
+        //public string Name => TeleportManager.AetheryteNames.TryGetValue(AetheryteId, out var name) ? name : string.Empty;
+        public string Name => TeleportManager.GetNameForLocation(this);
     }
 }

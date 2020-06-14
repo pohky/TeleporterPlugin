@@ -77,7 +77,8 @@ namespace TeleporterPlugin {
             var list = new List<string>();
             if (string.IsNullOrEmpty(args) || string.IsNullOrWhiteSpace(args))
                 return list;
-            var matches = Regex.Matches(args, "(?<=\").*(?=\")|\\w{3,}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            //var matches = Regex.Matches(args, "(?<=\").*(?=\")|\\w{2,}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var matches = Regex.Matches(args, "([\"'])(?:(?=(\\\\?)).)*?\\1|[\\w\\d'&-)(]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             if (matches.Count == 0) return list;
             for (var i = 0; i < matches.Count; i++)
                 list.Add(matches[i].Value);
