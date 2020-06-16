@@ -63,17 +63,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PluginUi.cs" />
-    <Compile Include="TeleportAction.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Managers\TeleportAction.cs" />
     <Compile Include="TeleporterPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TeleportLocation.cs" />
-    <Compile Include="TeleportManager.cs" />
+    <Compile Include="Objects\TeleportLocation.cs" />
+    <Compile Include="Managers\TeleportManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TeleporterPlugin.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /i /e /s /y /f "$(TargetDir)*" "%25appdata%25\XIVLauncher\devPlugins\$(ProjectName)"</PostBuildEvent>

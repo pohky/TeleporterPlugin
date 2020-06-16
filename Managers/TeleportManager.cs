@@ -4,8 +4,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud.Plugin;
 using Lumina.Excel.GeneratedSheets;
+using TeleporterPlugin.Objects;
 
-namespace TeleporterPlugin {
+namespace TeleporterPlugin.Managers {
     internal static class TeleportManager {
         private delegate IntPtr GetAvalibleLocationListDelegate(IntPtr locationsPtr, uint arg1);
         private delegate void TeleportDirectDelegate(uint cmd, uint aetheryteId, uint arg3, uint subIndex, uint arg5);
@@ -74,7 +75,6 @@ namespace TeleporterPlugin {
             if (!location.HasValue || location.Value.AetheryteId <= 0)
                 return TeleportAction.Invalid;
             return new TeleportAction(location.Value, () => {
-                //PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
                 LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
                 _teleportDirect?.Invoke(0xCA, location.Value.AetheryteId, 0, location.Value.SubIndex, 0);
             });
@@ -84,9 +84,8 @@ namespace TeleporterPlugin {
             if (!location.HasValue || location.Value.AetheryteId <= 0)
                 return TeleportAction.Invalid;
             return new TeleportAction(location.Value, () => {
-                //PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
                 LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
-                _teleportWithTicket?.Invoke(AvailableLocationsAddress, location.Value.AetheryteId, 0);
+                _teleportWithTicket?.Invoke(AvailableLocationsAddress, location.Value.AetheryteId, location.Value.SubIndex);
             });
         }
 
@@ -96,7 +95,6 @@ namespace TeleporterPlugin {
             return new TeleportAction(location.Value, () => {
                 var agent = GetAgentInterfaceById(0x22) ?? IntPtr.Zero;
                 if(agent == IntPtr.Zero) return;
-                //PluginLog.Log($"Starting Teleport to '{location.Value.Name}'");
                 LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
                 _teleportWithMapClick?.Invoke(agent, 3, location.Value.AetheryteId, 0xFF);
             });
@@ -112,10 +110,8 @@ namespace TeleporterPlugin {
             if (!name.Equals("Estate Hall (Private)", StringComparison.OrdinalIgnoreCase))
                 return name;
             switch (location.SubIndex) {
-                case 0: 
-                    name = "Estate Hall (Private)"; break;
-                case 128: 
-                    name = "Apartment"; break;
+                case 0: name = "Estate Hall (Private)"; break;
+                case 128: name = "Apartment"; break;
                 case var n when n >= 1 && n <= 127: 
                     name = $"Shared Estate ({location.SubIndex})"; break;
                 default:

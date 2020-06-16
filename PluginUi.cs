@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using System.Numerics;
 using ImGuiNET;
+using TeleporterPlugin.Managers;
 
 namespace TeleporterPlugin {
     public class PluginUi : IDisposable {
         private readonly TeleporterPlugin _plugin;
         public bool DebugVisible;
-
-        private List<string> _locations = new List<string>{"GetList to Update"};
-        private List<string> _aetheryteId = new List<string> {"Empty"};
-        private List<string> _subIndex = new List<string> {"Empty"};
-        private List<string> _zoneId = new List<string> {"Empty"};
-        private int _selected;
+        public bool SettingsVisible;
 
         public PluginUi(TeleporterPlugin plugin) {
             _plugin = plugin;
@@ -21,7 +17,26 @@ namespace TeleporterPlugin {
 
         private void Draw() {
             if (DebugVisible) DrawDebug();
+            if (SettingsVisible) DrawSettings();
         }
+
+        public void DrawSettings() {
+            var windowSize = new Vector2(350, 315);
+            ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
+            if (ImGui.Begin($"{_plugin.Name} Settings", ref SettingsVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
+                
+            }
+            ImGui.End();
+        }
+
+        #region DebugWindow
+
+        private readonly List<string> dbg_locations = new List<string> {"GetList to Update"};
+        private readonly List<string> dbg_aetheryteId = new List<string> {"Empty"};
+        private readonly List<string> dbg_subIndex = new List<string> {"Empty"};
+        private readonly List<string> dbg_zoneId = new List<string> {"Empty"};
+        private int dbg_selected;
 
         public void DrawDebug() {
             var windowSize = new Vector2(350, 315);
@@ -34,26 +49,26 @@ namespace TeleporterPlugin {
                 ImGui.Separator();
                 
                 if (ImGui.Button("GetList")) {
-                    _locations.Clear();
-                    _aetheryteId.Clear();
-                    _subIndex.Clear();
-                    _zoneId.Clear();
+                    dbg_locations.Clear();
+                    dbg_aetheryteId.Clear();
+                    dbg_subIndex.Clear();
+                    dbg_zoneId.Clear();
                     foreach (var location in TeleportManager.AvailableLocations) {
-                        _locations.Add(location.Name);
-                        _aetheryteId.Add(location.AetheryteId.ToString());
-                        _subIndex.Add(location.SubIndex.ToString());
-                        _zoneId.Add(location.ZoneId.ToString());
+                        dbg_locations.Add(location.Name);
+                        dbg_aetheryteId.Add(location.AetheryteId.ToString());
+                        dbg_subIndex.Add(location.SubIndex.ToString());
+                        dbg_zoneId.Add(location.ZoneId.ToString());
                     }
                 }
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport")) 
-                    TeleportManager.Teleport(_locations[_selected]);
+                    TeleportManager.Teleport(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket)"))
-                    TeleportManager.TeleportTicket(_locations[_selected]);
+                    TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Map)"))
-                    TeleportManager.TeleportMap(_locations[_selected]);
+                    TeleportManager.TeleportMap(dbg_locations[dbg_selected]);
 
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(4, "##listbox");
@@ -67,13 +82,13 @@ namespace TeleporterPlugin {
                 ImGui.Text("ZoneId"); ImGui.NextColumn();
 
                 ImGui.Separator();
-                for (var i = 0; i < _locations.Count; i++) {
-                    if (ImGui.Selectable($"{_locations[i]}", _selected == i, ImGuiSelectableFlags.SpanAllColumns))
-                        _selected = i;
+                for (var i = 0; i < dbg_locations.Count; i++) {
+                    if (ImGui.Selectable($"{dbg_locations[i]}", dbg_selected == i, ImGuiSelectableFlags.SpanAllColumns))
+                        dbg_selected = i;
                     ImGui.NextColumn();
-                    ImGui.Text(_aetheryteId[i]); ImGui.NextColumn();
-                    ImGui.Text(_subIndex[i]); ImGui.NextColumn();
-                    ImGui.Text(_zoneId[i]); ImGui.NextColumn();
+                    ImGui.Text(dbg_aetheryteId[i]); ImGui.NextColumn();
+                    ImGui.Text(dbg_subIndex[i]); ImGui.NextColumn();
+                    ImGui.Text(dbg_zoneId[i]); ImGui.NextColumn();
                 }
 
                 ImGui.EndChild();
@@ -82,6 +97,8 @@ namespace TeleporterPlugin {
             }
             ImGui.End();
         }
+
+        #endregion
         
         public void Dispose() {
             _plugin.Interface.UiBuilder.OnBuildUi -= Draw;

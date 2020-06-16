@@ -1,7 +1,8 @@
 ﻿using System;
 using Dalamud.Plugin;
+using TeleporterPlugin.Objects;
 
-namespace TeleporterPlugin {
+namespace TeleporterPlugin.Managers {
     public class TeleportAction {
         private readonly Action _action;
         public TeleportLocation Location { get; }

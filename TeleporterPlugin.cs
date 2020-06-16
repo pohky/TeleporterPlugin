@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
+using TeleporterPlugin.Managers;
 
 namespace TeleporterPlugin {
     public class TeleporterPlugin : IDalamudPlugin {
@@ -12,9 +13,12 @@ namespace TeleporterPlugin {
         public string Name => "Teleporter";
         public PluginUi Gui { get; private set; }
         public DalamudPluginInterface Interface { get; private set; }
+        public Configuration Config { get; private set; }
 
         public void Initialize(DalamudPluginInterface pluginInterface) {
             Interface = pluginInterface;
+            Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            Config.Initialize(pluginInterface);
             Gui = new PluginUi(this);
             TeleportManager.Init(Interface);
             TeleportManager.LogEvent += TeleportManagerOnLogEvent;
@@ -35,17 +39,7 @@ namespace TeleporterPlugin {
         private void CommandHandler(string command, string arguments) {
             var arg = arguments.Trim();
             if (arg.Equals("help") || string.IsNullOrEmpty(arg) || string.IsNullOrWhiteSpace(arg)) {
-                var helpText = $"{Name} Help:\n" +
-#if DEBUG
-                               "/tp debug - Open the Debug Window\n" +
-#endif
-                               "/tp <name> <type>\n" +
-                               "name: Aetheryte Name (e.g. New Gridania)\n" +
-                               "type: (optional) The type of Teleport to use\n" +
-                               "  -> map    - Teleport as if using the Worldmap\n" +
-                               "  -> ticket - Teleport as if using the Teleport Window\n" +
-                               "  -> direct - Teleport without asking for anything (default)";
-                Interface.Framework.Gui.Chat.Print(helpText);
+                PrintHelpText();
                 return;
             }
 
@@ -77,12 +71,25 @@ namespace TeleporterPlugin {
             var list = new List<string>();
             if (string.IsNullOrEmpty(args) || string.IsNullOrWhiteSpace(args))
                 return list;
-            //var matches = Regex.Matches(args, "(?<=\").*(?=\")|\\w{2,}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             var matches = Regex.Matches(args, "([\"'])(?:(?=(\\\\?)).)*?\\1|[\\w\\d'&-)(]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
             if (matches.Count == 0) return list;
             for (var i = 0; i < matches.Count; i++)
                 list.Add(matches[i].Value);
             return list;
+        }
+
+        private void PrintHelpText() {
+            var helpText = $"{Name} Help:\n" +
+#if DEBUG
+                               "/tp debug - Open the Debug Window\n" +
+#endif
+                           "/tp <name> <type>\n" +
+                           "name: Aetheryte Name (e.g. New Gridania)\n" +
+                           "type: (optional) The type of Teleport to use\n" +
+                           "  -> map    - Teleport as if using the Worldmap\n" +
+                           "  -> ticket - Teleport as if using the Teleport Window\n" +
+                           "  -> direct - Teleport without asking for anything (default)";
+            Interface.Framework.Gui.Chat.Print(helpText);
         }
 
         public void Dispose() {
