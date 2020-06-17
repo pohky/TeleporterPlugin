@@ -8,96 +8,72 @@ using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Managers {
     internal static class TeleportManager {
-        private delegate IntPtr GetAvalibleLocationListDelegate(IntPtr locationsPtr, uint arg1);
-        private delegate void TeleportDirectDelegate(uint cmd, uint aetheryteId, uint arg3, uint subIndex, uint arg5);
-        private delegate void TeleportWithTicketDelegate(IntPtr locationsPtr, uint aetheryteId, byte arg2);
-        private delegate void TeleportWithMapClickDelegate(IntPtr mapAgent, int arg2, uint aetheryteId, uint arg4);
-        private delegate IntPtr GetUiModuleDelegate();
+        private delegate IntPtr GetAvalibleLocationListDelegate(IntPtr locationsPtr, uint arg2);
+        private delegate void SendCommandDelegate(uint cmd, uint aetheryteId, bool useTicket, uint subIndex, uint arg5);
+        private delegate bool TryTeleportWithTicketDelegate(IntPtr tpStatusPtr, uint aetheryteId, byte subIndex);
+        private delegate int GetItemCountDelegate(IntPtr arg1, uint itemId, uint arg3, uint arg4, uint arg5, uint arg6);
 
         private static GetAvalibleLocationListDelegate _getAvalibleLocationList;
-        private static TeleportDirectDelegate _teleportDirect;
-        private static TeleportWithTicketDelegate _teleportWithTicket;
-        private static TeleportWithMapClickDelegate _teleportWithMapClick;
-        private static GetUiModuleDelegate _getUiModule;
+        private static SendCommandDelegate _sendCommand;
+        private static TryTeleportWithTicketDelegate _tryTeleportWithTicket;
+        private static GetItemCountDelegate _getItemCount;
 
-        public static IntPtr AvailableLocationsAddress { get; private set; }
-        public static IntPtr UiModuleAddress => _getUiModule?.Invoke() ?? IntPtr.Zero;
-        public static IntPtr UiAgentModuleAddress => UiModuleAddress != IntPtr.Zero ? UiModuleAddress + 0xBAB50 : IntPtr.Zero;
+        public static IntPtr AetheryteListAddress { get; private set; }
+        public static IntPtr TeleportStatusAddress { get; private set; }
+        public static IntPtr ItemCountStaticArgAddress { get; private set; }
 
         public static Dictionary<uint, string> AetheryteNames { get; private set; } = new Dictionary<uint, string>();
-        public static IEnumerable<TeleportLocation> AvailableLocations => GetAvailableLocations();
+        public static IEnumerable<TeleportLocation> AetheryteList => GetAetheryteList();
         public static event Action<string> LogEvent;
         public static event Action<string> LogErrorEvent;
         
         #region Teleport
 
-        public static void Teleport(uint aetheryteId) {
-            var location = GetLocationById(aetheryteId);
-            if (!location.HasValue) return;
-            GetDirectTeleport(location)?.Execute();
-        }
-
         public static void Teleport(string aetheryteName, bool matchPartial = true) {
+#if DEBUG
+            PluginLog.Log($"Using Direct Teleport to '{aetheryteName}'");
+#endif
             var location = GetLocationByName(aetheryteName, matchPartial);
-            if(!location.HasValue) return;
-            GetDirectTeleport(location)?.Execute();
+            if (!location.HasValue) {
+                LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
+                return;
+            }
+            LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
+            _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, false, location.Value.SubIndex, 0);
         }
 
-        public static void TeleportTicket(uint aetheryteId) {
-            var location = GetLocationById(aetheryteId);
-            if (!location.HasValue) return;
-            GetTicketTeleport(location)?.Execute();
-        }
-
-        public static void TeleportTicket(string aetheryteName, bool matchPartial = true) {
+        public static void TeleportTicket(string aetheryteName, bool skipPopup = false, bool matchPartial = true) {
+#if DEBUG
+            PluginLog.Log($"Using Ticket Teleport to '{aetheryteName}'");
+#endif
             var location = GetLocationByName(aetheryteName, matchPartial);
-            if (!location.HasValue) return;
-            GetTicketTeleport(location)?.Execute();
-        }
+            if (!location.HasValue) {
+                LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
+                return;
+            }
 
-        public static void TeleportMap(uint aetheryteId) {
-            var location = GetLocationById(aetheryteId);
-            if (!location.HasValue) return;
-            GetMapTeleport(location)?.Execute();
-        }
-
-        public static void TeleportMap(string aetheryteName, bool matchPartial = true) {
-            var location = GetLocationByName(aetheryteName, matchPartial);
-            if (!location.HasValue) return;
-            GetMapTeleport(location)?.Execute();
-        }
-
-        #endregion
-
-        #region GetTeleportAction
-
-        public static TeleportAction GetDirectTeleport(TeleportLocation? location) {
-            if (!location.HasValue || location.Value.AetheryteId <= 0)
-                return TeleportAction.Invalid;
-            return new TeleportAction(location.Value, () => {
-                LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
-                _teleportDirect?.Invoke(0xCA, location.Value.AetheryteId, 0, location.Value.SubIndex, 0);
-            });
-        }
-
-        public static TeleportAction GetTicketTeleport(TeleportLocation? location) {
-            if (!location.HasValue || location.Value.AetheryteId <= 0)
-                return TeleportAction.Invalid;
-            return new TeleportAction(location.Value, () => {
-                LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
-                _teleportWithTicket?.Invoke(AvailableLocationsAddress, location.Value.AetheryteId, location.Value.SubIndex);
-            });
-        }
-
-        public static TeleportAction GetMapTeleport(TeleportLocation? location) {
-            if (!location.HasValue || location.Value.AetheryteId <= 0)
-                return TeleportAction.Invalid;
-            return new TeleportAction(location.Value, () => {
-                var agent = GetAgentInterfaceById(0x22) ?? IntPtr.Zero;
-                if(agent == IntPtr.Zero) return;
-                LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
-                _teleportWithMapClick?.Invoke(agent, 3, location.Value.AetheryteId, 0xFF);
-            });
+            LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
+            if (skipPopup && GetAetheryteTicketCount() > 0) {
+#if DEBUG
+                PluginLog.Log("Skipping Ticket Popup");
+#endif
+                _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, true, location.Value.SubIndex, 0);
+                return;
+            }
+#if DEBUG
+            PluginLog.Log("Using Ticket Popup");
+#endif
+            var result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.Value.AetheryteId, location.Value.SubIndex);
+            if (!result.HasValue) {
+                LogErrorEvent?.Invoke("Unable to Teleport using Aetheryte Tickets.");
+                return;
+            }
+            if (!result.Value) {
+#if DEBUG
+                PluginLog.Log("No Tickets. Fallback to Direct Teleport");
+#endif
+                _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, false, location.Value.SubIndex, 0);
+            }
         }
 
         #endregion
@@ -122,39 +98,30 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static TeleportLocation? GetLocationByName(string aetheryteName, bool matchPartial = true) {
-            var location = GetAvailableLocations().FirstOrDefault(o =>
+            var location = GetAetheryteList().FirstOrDefault(o =>
                 o.Name.Equals(aetheryteName, StringComparison.OrdinalIgnoreCase) ||
                 matchPartial && o.Name.ToUpper().StartsWith(aetheryteName.ToUpper()));
-            if (location.AetheryteId > 0) return location;
-            LogErrorEvent?.Invoke($"No valid Aetheryte found for '{aetheryteName}'.");
-            return null;
+            return location.AetheryteId > 0 ? (TeleportLocation?)location : null;
         }
 
-        public static TeleportLocation? GetLocationById(uint aetheryteId) {
-            var location = GetAvailableLocations().FirstOrDefault(o => o.AetheryteId == aetheryteId);
-            if (location.AetheryteId > 0) return location;
-            LogErrorEvent?.Invoke($"No valid Aetheryte found for ID '{aetheryteId}'.");
-            return null;
-        }
-
-        private static IEnumerable<TeleportLocation> GetAvailableLocations() {
-            var ptr = _getAvalibleLocationList?.Invoke(AvailableLocationsAddress, 0) ?? IntPtr.Zero;
+        private static IEnumerable<TeleportLocation> GetAetheryteList() {
+            var ptr = _getAvalibleLocationList?.Invoke(AetheryteListAddress, 0) ?? IntPtr.Zero;
             if (ptr == IntPtr.Zero) yield break;
 
             var start = Marshal.ReadIntPtr(ptr, 0);
             var end = Marshal.ReadIntPtr(ptr, 8);
-            var count = (int)((end.ToInt64() - start.ToInt64()) / 20);
+            var size = Marshal.SizeOf<TeleportLocation>();
+            var count = (int)((end.ToInt64() - start.ToInt64()) / size);
             for (var i = 0; i < count; i++)
-                yield return Marshal.PtrToStructure<TeleportLocation>(start + i * 20);
+                yield return Marshal.PtrToStructure<TeleportLocation>(start + i * size);
         }
 
-        private static IntPtr? GetAgentInterfaceById(int id) {
-            var module = UiAgentModuleAddress;
-            if (module == IntPtr.Zero) return null;
-            var listStart = module + 0x20;
-            var agent = Marshal.ReadIntPtr(listStart, id * 8);
-            if (agent == IntPtr.Zero) return null;
-            return agent;
+        private static int GetAetheryteTicketCount() {
+            //aetheryte ticket id = 0x1D91
+            if (ItemCountStaticArgAddress == IntPtr.Zero)
+                return 0;
+            var count = _getItemCount?.Invoke(ItemCountStaticArgAddress, 0x1D91, 0, 0, 1, 0);
+            return count ?? 0;
         }
 
         #endregion
@@ -181,32 +148,36 @@ namespace TeleporterPlugin.Managers {
         }
 
         private static void InitDelegates(DalamudPluginInterface plugin) {
-            var directAddr = plugin.TargetModuleScanner.ScanText("48895C24??48896C24??48897424??574881EC????????488B05????????4833C448898424????????8BE9418BD9488B0D????????418BF88BF2");
-            if(directAddr != IntPtr.Zero)
-                _teleportDirect = Marshal.GetDelegateForFunctionPointer<TeleportDirectDelegate>(directAddr);
+            var scanner = plugin.TargetModuleScanner;
+            var sendCmdAddr = scanner.ScanText("48895C24??48896C24??48897424??574881EC????????488B05????????4833C448898424????????8BE9418BD9488B0D????????418BF88BF2");
+            if(sendCmdAddr != IntPtr.Zero)
+                _sendCommand = Marshal.GetDelegateForFunctionPointer<SendCommandDelegate>(sendCmdAddr);
 
-            var ticketAddr = plugin.TargetModuleScanner.ScanText("48895C24??48897424??574883EC??488BF9410FB6F0488B0D");
-            if(ticketAddr != IntPtr.Zero)
-                _teleportWithTicket = Marshal.GetDelegateForFunctionPointer<TeleportWithTicketDelegate>(ticketAddr);
-
-            var mapClickAddr = plugin.TargetModuleScanner.ScanText("48895C24??48897424??574883EC??418BF9418BF0488BD983EA01");
-            if(mapClickAddr != IntPtr.Zero)
-                _teleportWithMapClick = Marshal.GetDelegateForFunctionPointer<TeleportWithMapClickDelegate>(mapClickAddr);
-
-            var getLocationsAddr = plugin.TargetModuleScanner.ScanText("48895C24??5557415441554156488DAC24????????4881EC");
-            if(getLocationsAddr != IntPtr.Zero)
+            var getLocationsAddr = scanner.ScanText("48895C24??5557415441554156488DAC24????????4881EC");
+            if (getLocationsAddr != IntPtr.Zero)
                 _getAvalibleLocationList = Marshal.GetDelegateForFunctionPointer<GetAvalibleLocationListDelegate>(getLocationsAddr);
-            
-            var getUimoduleAddr = plugin.TargetModuleScanner.ScanText("E8????????488BC8488B10FF52408088????????01E9");
-            if(getUimoduleAddr != IntPtr.Zero)
-                _getUiModule = Marshal.GetDelegateForFunctionPointer<GetUiModuleDelegate>(getUimoduleAddr);
+
+            var tryTicketTpAddr = scanner.ScanText("48895C24??48897424??574883EC??8079??00410FB6F88BF2");
+            if (tryTicketTpAddr != IntPtr.Zero)
+                _tryTeleportWithTicket = Marshal.GetDelegateForFunctionPointer<TryTeleportWithTicketDelegate>(tryTicketTpAddr);
+
+            var getItemCountAddr = scanner.ScanText("48895C24??48896C24??48897424??48897C24??4154415641574883EC??33DB8D");
+            if (getItemCountAddr != IntPtr.Zero)
+                _getItemCount = Marshal.GetDelegateForFunctionPointer<GetItemCountDelegate>(getItemCountAddr);
         }
 
         private static void InitAddresses(DalamudPluginInterface plugin) {
-            var locationAob = plugin.TargetModuleScanner.ScanText("33D2488D0D????????E8????????49894424");
+            var scanner = plugin.TargetModuleScanner;
+            var locationAob = scanner.ScanText("33D2488D0D????????E8????????49894424");
             if (locationAob == IntPtr.Zero) return;
             var locationOffset = Marshal.ReadInt32(locationAob, 5);
-            AvailableLocationsAddress = plugin.TargetModuleScanner.ResolveRelativeAddress(locationAob + 9, locationOffset);
+            AetheryteListAddress = scanner.ResolveRelativeAddress(locationAob + 9, locationOffset);
+            TeleportStatusAddress = AetheryteListAddress == IntPtr.Zero ? IntPtr.Zero : AetheryteListAddress + 0x20;
+
+            var itemCountArgAob = scanner.ScanText("488D0D????????66894424??4533C94533C0");
+            if(itemCountArgAob == IntPtr.Zero) return;
+            var itemCountArgOffset = Marshal.ReadInt32(itemCountArgAob, 3);
+            ItemCountStaticArgAddress = scanner.ResolveRelativeAddress(itemCountArgAob + 7, itemCountArgOffset);
         }
 
         #endregion

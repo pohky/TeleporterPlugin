@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
@@ -9,14 +8,12 @@ using TeleporterPlugin.Objects;
 namespace TeleporterPlugin {
     public class PluginUi : IDisposable {
         private readonly TeleporterPlugin _plugin;
-        private bool _debugVisible;
+        public bool DebugVisible;
         private bool _settingsVisible;
-        public bool DebugVisible { get => _debugVisible; set => _debugVisible = value; }
         public bool SettingsVisible {
             get => _settingsVisible;
             set {
-                if (value)
-                    LoadSettings();
+                if (value) LoadSettings();
                 _settingsVisible = value;
             }
         }
@@ -28,7 +25,7 @@ namespace TeleporterPlugin {
         }
 
         private void Draw() {
-            if (_debugVisible) DrawDebug();
+            if (DebugVisible) DrawDebug();
             if (_settingsVisible) DrawSettings();
         }
 
@@ -36,16 +33,16 @@ namespace TeleporterPlugin {
             cfg_inputGilThreshold = _plugin.Config.GilThreshold;
             cfg_useGilThreshold = _plugin.Config.UseGilThreshold;
             cfg_tpTypeSelect = (int)_plugin.Config.DefaultTeleportType;
-            cfg_useTicketWithoutAsking = _plugin.Config.UseTicketWithoutAsking;
-            cfg_aliasList = _plugin.Config.AliasList.Select(TeleportAlias.FromString).Where(a => a != null).ToList();
+            cfg_skipTicketPopup = _plugin.Config.SkipTicketPopup;
+            cfg_aliasList = _plugin.Config.AliasList;
         }
 
         private void SaveSettings() {
             _plugin.Config.GilThreshold = cfg_inputGilThreshold;
-            _plugin.Config.UseTicketWithoutAsking = cfg_useTicketWithoutAsking;
+            _plugin.Config.SkipTicketPopup = cfg_skipTicketPopup;
             _plugin.Config.UseGilThreshold = cfg_useGilThreshold;
             _plugin.Config.DefaultTeleportType = (TeleportType)cfg_tpTypeSelect;
-            _plugin.Config.AliasList = cfg_aliasList.Select(a => a.ToString()).ToList();
+            _plugin.Config.AliasList = cfg_aliasList;
             _plugin.Config.Save();
         }
 
@@ -57,13 +54,13 @@ namespace TeleporterPlugin {
         private int cfg_tpTypeSelect;
         private bool cfg_useGilThreshold;
         private int cfg_inputGilThreshold;
-        private bool cfg_useTicketWithoutAsking;
+        private bool cfg_skipTicketPopup;
         private List<TeleportAlias> cfg_aliasList;
 
         public void DrawSettings() {
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
             ImGui.SetNextWindowSizeConstraints(new Vector2(300, 300), new Vector2(float.MaxValue, float.MaxValue));
-            if (!ImGui.Begin($"{_plugin.Name} Config", ref _settingsVisible, ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoCollapse)) return;
+            if (!ImGui.Begin($"{_plugin.Name} Config", ref _settingsVisible, ImGuiWindowFlags.NoScrollWithMouse)) return;
 
             if (ImGui.BeginChild("##scollingregionSettings", new Vector2(0, -ImGui.GetTextLineHeight() * 2))) {
                 if (ImGui.CollapsingHeader("General Settings", ImGuiTreeNodeFlags.DefaultOpen))
@@ -96,7 +93,7 @@ namespace TeleporterPlugin {
             
             ImGui.SameLine();
             if (ImGui.Button("Delete Selected"))
-                cfg_aliasList.RemoveAll(a => a.Selected);
+                cfg_aliasList.RemoveAll(a => a.GuiSelected);
 
             ImGui.SameLine();
             if (ImGui.Button("Delete All")) {
@@ -128,17 +125,15 @@ namespace TeleporterPlugin {
             for (var i = 0; i < cfg_aliasList.Count; i++) {
                 var alias = cfg_aliasList[i];
                 if (deleteAliasHovered && i == 0) ImGui.ArrowButton("delete_indicator", ImGuiDir.Right);
-                else ImGui.Checkbox($"##hidelabelAliasSelected{i}", ref alias.Selected);
+                else ImGui.Checkbox($"##hidelabelAliasSelected{i}", ref alias.GuiSelected);
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 45);
-                if(deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Alias);
-                else if (ImGui.InputText($"##hidelabelAliasKey{i}", alias.AliasBuffer, alias.BufferSize, ImGuiInputTextFlags.CharsNoBlank))
-                    alias.RemoveInvalidChars();
+                if (deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Alias);
+                else ImGui.InputText($"##hidelabelAliasKey{i}", alias.AliasBuffer, alias.BufferSize, ImGuiInputTextFlags.CharsNoBlank);
                 ImGui.NextColumn();
                 ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 15);
-                if (deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Value);
-                else if (ImGui.InputText($"##hidelabelAliasValue{i}", alias.ValueBuffer, alias.BufferSize))
-                    alias.RemoveInvalidChars();
+                if (deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Aetheryte);
+                else ImGui.InputText($"##hidelabelAliasValue{i}", alias.AetheryteBuffer, alias.BufferSize);
                 ImGui.NextColumn();
             }
             
@@ -151,7 +146,7 @@ namespace TeleporterPlugin {
             ImGui.SameLine();
             ImGui.SetNextItemWidth(100);
             ImGui.Combo("##hidelabelTypeCombo", ref cfg_tpTypeSelect, TpTypesList, TpTypesList.Length);
-            ImGui.Checkbox("Skip Ticket Popup", ref cfg_useTicketWithoutAsking);
+            ImGui.Checkbox("Skip Ticket Popup", ref cfg_skipTicketPopup);
             ImGui.Checkbox("Use Tickets if Gil Price is above:", ref cfg_useGilThreshold);
             ImGui.SameLine();
             ImGui.SetNextItemWidth(150);
@@ -185,10 +180,10 @@ namespace TeleporterPlugin {
             var windowSize = new Vector2(350, 315);
             ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
-            if (ImGui.Begin($"{_plugin.Name} Debug", ref _debugVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
-                ImGui.TextUnformatted($"UiModule: {TeleportManager.UiModuleAddress.ToInt64():X8}");
-                ImGui.TextUnformatted($"UiAgentModule: {TeleportManager.UiAgentModuleAddress.ToInt64():X8}");
-                ImGui.TextUnformatted($"KnownLocations: {TeleportManager.AvailableLocationsAddress.ToInt64():X8}");
+            if (ImGui.Begin($"{_plugin.Name} Debug", ref DebugVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
+                ImGui.TextUnformatted($"AetheryteList: {TeleportManager.AetheryteListAddress.ToInt64():X8}");
+                ImGui.TextUnformatted($"TeleportStatus: {TeleportManager.TeleportStatusAddress.ToInt64():X8}");
+                ImGui.TextUnformatted($"ItemCountStaticArg: {TeleportManager.ItemCountStaticArgAddress.ToInt64():X8}");
                 ImGui.Separator();
                 
                 if (ImGui.Button("GetList")) {
@@ -196,7 +191,7 @@ namespace TeleporterPlugin {
                     dbg_aetheryteId.Clear();
                     dbg_subIndex.Clear();
                     dbg_zoneId.Clear();
-                    foreach (var location in TeleportManager.AvailableLocations) {
+                    foreach (var location in TeleportManager.AetheryteList) {
                         dbg_locations.Add(location.Name);
                         dbg_aetheryteId.Add(location.AetheryteId.ToString());
                         dbg_subIndex.Add(location.SubIndex.ToString());
@@ -204,14 +199,11 @@ namespace TeleporterPlugin {
                     }
                 }
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport")) 
-                    TeleportManager.Teleport(dbg_locations[dbg_selected]);
+                if (ImGui.Button("Teleport")) TeleportManager.Teleport(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport (Ticket)"))
-                    TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
+                if (ImGui.Button("Teleport (Ticket)")) TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport (Map)"))
-                    TeleportManager.TeleportMap(dbg_locations[dbg_selected]);
+                //if (ImGui.Button("Teleport (Map)")) TeleportManager.TeleportMap(dbg_locations[dbg_selected]);
 
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(4, "##listbox");

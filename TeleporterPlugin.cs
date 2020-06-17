@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
 using TeleporterPlugin.Managers;
+using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin {
     public class TeleporterPlugin : IDalamudPlugin {
@@ -37,8 +37,13 @@ namespace TeleporterPlugin {
         }
 
         private void CommandHandler(string command, string arguments) {
-            var arg = arguments.Trim();
-            if (arg.Equals("help") || string.IsNullOrEmpty(arg) || string.IsNullOrWhiteSpace(arg)) {
+            var arg = arguments.Trim().Replace("\"", "");
+            if (string.IsNullOrEmpty(arg) || arg.Equals("config", StringComparison.OrdinalIgnoreCase)) {
+                Gui.SettingsVisible = !Gui.SettingsVisible;
+                return;
+            }
+
+            if (arg.Equals("help", StringComparison.OrdinalIgnoreCase)) {
                 PrintHelpText();
                 return;
             }
@@ -48,47 +53,69 @@ namespace TeleporterPlugin {
                 return;
             }
 
-            var list = ParseArguments(arg);
-            var type = list.Last() ?? "direct";
-            var location = string.Join(" ", list.Take(list.Count - 1));
-            if (type.Equals("direct", StringComparison.OrdinalIgnoreCase)) {
-                if (uint.TryParse(location, out var id)) TeleportManager.Teleport(id);
-                else TeleportManager.Teleport(location);
-            } else if (type.Equals("map", StringComparison.OrdinalIgnoreCase)) {
-                if (uint.TryParse(location, out var id)) TeleportManager.TeleportMap(id);
-                else TeleportManager.TeleportMap(location);
-            } else if (type.Equals("ticket", StringComparison.OrdinalIgnoreCase)) {
-                if (uint.TryParse(location, out var id)) TeleportManager.TeleportTicket(id);
-                else TeleportManager.TeleportTicket(location);
-            } else {
-                if (uint.TryParse(arg, out var id))
-                    TeleportManager.Teleport(id);
-                else TeleportManager.Teleport(arg);
+            HandleTeleportArguments(SplitArguments(arg));
+        }
+
+        private void HandleTeleportArguments(List<string> args) {
+            string locationString;
+            var type = GetTeleportTypeFromArguments(args);
+            if (!type.HasValue) {
+                type = Config.DefaultTeleportType;
+                locationString = string.Join(" ", args);
+            } else locationString = string.Join(" ", args.Take(args.Count - 1));
+
+            if (TryGetAlias(locationString, out var alias))
+                locationString = alias.Aetheryte;
+
+            if (Config.UseGilThreshold) {
+                var location = TeleportManager.GetLocationByName(locationString);
+                if (location.HasValue) {
+                    var price = (int)location.Value.GilCost;
+                    if (price > Config.GilThreshold)
+                        type = TeleportType.Ticket;
+                }
+            }
+            
+            switch (type) {
+                case TeleportType.Direct:
+                    TeleportManager.Teleport(locationString); break;
+                case TeleportType.Ticket:
+                    TeleportManager.TeleportTicket(locationString, Config.SkipTicketPopup); break;
+                default:
+                    TeleportManagerOnLogErrorEvent($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
+                    break;
             }
         }
 
-        private static List<string> ParseArguments(string args) {
-            var list = new List<string>();
+        private bool TryGetAlias(string name, out TeleportAlias alias) {
+            alias = Config.AliasList.FirstOrDefault(a => name.Equals(a.Alias, StringComparison.OrdinalIgnoreCase));
+            return alias != null;
+        }
+
+        private static TeleportType? GetTeleportTypeFromArguments(IEnumerable<string> args) {
+            var last = args.LastOrDefault() ?? string.Empty;
+            if (Enum.TryParse<TeleportType>(last, true, out var type))
+                return type;
+            return null;
+        }
+
+        private static List<string> SplitArguments(string args) {
             if (string.IsNullOrEmpty(args) || string.IsNullOrWhiteSpace(args))
-                return list;
-            var matches = Regex.Matches(args, "([\"'])(?:(?=(\\\\?)).)*?\\1|[\\w\\d'&-)(]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            if (matches.Count == 0) return list;
-            for (var i = 0; i < matches.Count; i++)
-                list.Add(matches[i].Value);
-            return list;
+                return new List<string>();
+            return new List<string>(args.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries));
         }
 
         private void PrintHelpText() {
             var helpText = $"{Name} Help:\n" +
 #if DEBUG
-                               "/tp debug - Open the Debug Window\n" +
+                           "/tp debug - Show Debug Window\n" +
 #endif
+                           "/tp config - Show Settings Window\n" +
                            "/tp <name> <type>\n" +
                            "name: Aetheryte Name (e.g. New Gridania)\n" +
                            "type: (optional) The type of Teleport to use\n" +
-                           "  -> map    - Teleport as if using the Worldmap\n" +
-                           "  -> ticket - Teleport as if using the Teleport Window\n" +
-                           "  -> direct - Teleport without asking for anything (default)";
+                           "  -> ticket - Teleport using Aetheryte Tickets\n" +
+                           "  -> direct - Teleport without asking for anything";
             Interface.Framework.Gui.Chat.Print(helpText);
         }
 

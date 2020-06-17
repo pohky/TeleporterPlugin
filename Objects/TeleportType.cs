@@ -2,6 +2,6 @@
     public enum TeleportType {
         Direct,
         Ticket,
-        Map
+        //Map
     }
 }

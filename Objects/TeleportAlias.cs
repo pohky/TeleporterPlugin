@@ -1,77 +1,65 @@
 ﻿using System;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace TeleporterPlugin.Objects {
     public class TeleportAlias {
-        public static TeleportAlias Empty => new TeleportAlias("", "");
-        public const char SeperatorChar = ':';
-        public uint BufferSize { get; }
-        public readonly byte[] AliasBuffer;
-        public readonly byte[] ValueBuffer;
+        public static TeleportAlias Empty => new TeleportAlias(null, null);
 
-        internal bool Selected;
+        [NonSerialized] internal uint BufferSize = 128;
+        [NonSerialized] internal readonly byte[] AliasBuffer;
+        [NonSerialized] internal readonly byte[] AetheryteBuffer;
+        [NonSerialized] internal bool GuiSelected;
 
         public string Alias {
-            get => Encoding.UTF8.GetString(AliasBuffer).Replace("\0", "");
-            set {
-                var newValue = value?.Trim() ?? "";
-                if (string.IsNullOrEmpty(newValue)) {
-                    Array.Clear(AliasBuffer, 0, AliasBuffer.Length);
-                    return;
-                }
-                var bytes = Encoding.UTF8.GetBytes(newValue);
-                Array.Clear(AliasBuffer, 0, AliasBuffer.Length);
-                if (bytes.Length > 0)
-                    Array.Copy(bytes, AliasBuffer, bytes.Length);
+            get => GetBufferValue(AliasBuffer);
+            set => SetBufferValue(value, AliasBuffer);
+        }
+
+        public string Aetheryte {
+            get => GetBufferValue(AetheryteBuffer);
+            set => SetBufferValue(value, AetheryteBuffer);
+        }
+
+        public TeleportType TeleportType { get; set; }
+
+        public TeleportAlias(string alias, string aetheryte, TeleportType type = TeleportType.Direct) {
+            AliasBuffer = new byte[BufferSize];
+            AetheryteBuffer = new byte[BufferSize];
+            Alias = alias;
+            Aetheryte = aetheryte;
+            TeleportType = type;
+        }
+
+        private string GetBufferValue(byte[] buffer) {
+            var len = GetZeroIndexOrLength(buffer);
+            return len == 0 ? string.Empty : Encoding.UTF8.GetString(buffer, 0, len);
+        }
+
+        private void SetBufferValue(string newValue, byte[] buffer) {
+            var value = newValue?.Trim();
+            if (string.IsNullOrEmpty(value)) {
+                Array.Clear(buffer, 0, buffer.Length);
+                return;
             }
+            var bytes = Encoding.UTF8.GetBytes(value);
+            if (bytes.Length <= 0) return;
+            Array.Clear(buffer, 0, buffer.Length);
+            Array.Copy(bytes, buffer, bytes.Length > buffer.Length ? buffer.Length : bytes.Length);
         }
 
-        public string Value {
-            get => Encoding.UTF8.GetString(ValueBuffer).Replace("\0", "");
-            set {
-                var newValue = value?.Trim() ?? "";
-                if (string.IsNullOrEmpty(newValue)) {
-                    Array.Clear(ValueBuffer, 0, ValueBuffer.Length);
-                    return;
-                }
-                var bytes = Encoding.UTF8.GetBytes(newValue);
-                Array.Clear(ValueBuffer, 0, ValueBuffer.Length);
-                if (bytes.Length > 0)
-                    Array.Copy(bytes, ValueBuffer, bytes.Length);
-            }
-        }
-
-        public TeleportAlias(string alias, string value, uint bufferSize = 160) {
-            if (alias == null) alias = "";
-            if (value == null) value = "";
-            if (alias.Length > bufferSize) bufferSize = (uint)alias.Length;
-            if (value.Length > bufferSize) bufferSize = (uint)value.Length;
-            BufferSize = bufferSize;
-            AliasBuffer = new byte[bufferSize];
-            ValueBuffer = new byte[bufferSize];
-            Alias = alias.Trim();
-            Value = value.Trim();
-        }
-
-        public static TeleportAlias FromString(string aliasString) {
-            var split = Regex.Split(aliasString, $"{SeperatorChar}{SeperatorChar}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            return split.Length != 2 ? null : new TeleportAlias(split[0], split[1]);
-        }
-
-        public TeleportAlias RemoveInvalidChars() {
-            Alias = Alias.Replace($"{SeperatorChar}", "").Replace("\0", "");
-            Value = Value.Replace($"{SeperatorChar}", "").Replace("\0", "");
-            return this;
+        private int GetZeroIndexOrLength(byte[] buffer) {
+            for(var i = 0; i < buffer.Length; i++)
+                if (buffer[i] == 0) return i;
+            return buffer.Length;
         }
 
         public void Clear() {
             Alias = null;
-            Value = null;
+            Aetheryte = null;
         }
 
         public override string ToString() {
-            return $"{Alias}{SeperatorChar}{SeperatorChar}{Value}";
+            return $"{Alias} | {Aetheryte} {TeleportType.ToString().ToLower()}";
         }
     }
 }

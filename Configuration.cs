@@ -10,10 +10,10 @@ namespace TeleporterPlugin {
         public int Version { get; set; } = 0;
 
         public TeleportType DefaultTeleportType { get; set; } = TeleportType.Direct;
-        public bool UseTicketWithoutAsking { get; set; }
+        public bool SkipTicketPopup { get; set; }
         public bool UseGilThreshold { get; set; }
         public int GilThreshold { get; set; } = 999;
-        public List<string> AliasList { get; set; } = new List<string>();
+        public List<TeleportAlias> AliasList { get; set; } = new List<TeleportAlias>();
 
         #region Init and Save
 
