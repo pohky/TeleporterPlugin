@@ -1,48 +1,191 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
+using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin {
     public class PluginUi : IDisposable {
         private readonly TeleporterPlugin _plugin;
-        public bool DebugVisible;
-        public bool SettingsVisible;
+        private bool _debugVisible;
+        private bool _settingsVisible;
+        public bool DebugVisible { get => _debugVisible; set => _debugVisible = value; }
+        public bool SettingsVisible {
+            get => _settingsVisible;
+            set {
+                if (value)
+                    LoadSettings();
+                _settingsVisible = value;
+            }
+        }
 
         public PluginUi(TeleporterPlugin plugin) {
             _plugin = plugin;
+            LoadSettings();
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
         }
 
         private void Draw() {
-            if (DebugVisible) DrawDebug();
-            if (SettingsVisible) DrawSettings();
+            if (_debugVisible) DrawDebug();
+            if (_settingsVisible) DrawSettings();
         }
 
+        private void LoadSettings() {
+            cfg_inputGilThreshold = _plugin.Config.GilThreshold;
+            cfg_useGilThreshold = _plugin.Config.UseGilThreshold;
+            cfg_tpTypeSelect = (int)_plugin.Config.DefaultTeleportType;
+            cfg_useTicketWithoutAsking = _plugin.Config.UseTicketWithoutAsking;
+            cfg_aliasList = _plugin.Config.AliasList.Select(TeleportAlias.FromString).Where(a => a != null).ToList();
+        }
+
+        private void SaveSettings() {
+            _plugin.Config.GilThreshold = cfg_inputGilThreshold;
+            _plugin.Config.UseTicketWithoutAsking = cfg_useTicketWithoutAsking;
+            _plugin.Config.UseGilThreshold = cfg_useGilThreshold;
+            _plugin.Config.DefaultTeleportType = (TeleportType)cfg_tpTypeSelect;
+            _plugin.Config.AliasList = cfg_aliasList.Select(a => a.ToString()).ToList();
+            _plugin.Config.Save();
+        }
+
+        #region Settings Window
+
+        private static readonly Vector4 ColorRed = new Vector4(255, 0, 0, 255);
+        private static readonly string[] TpTypesList = Enum.GetNames(typeof(TeleportType));
+
+        private int cfg_tpTypeSelect;
+        private bool cfg_useGilThreshold;
+        private int cfg_inputGilThreshold;
+        private bool cfg_useTicketWithoutAsking;
+        private List<TeleportAlias> cfg_aliasList;
+
         public void DrawSettings() {
-            var windowSize = new Vector2(350, 315);
-            ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
-            ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
-            if (ImGui.Begin($"{_plugin.Name} Settings", ref SettingsVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
-                
+            ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
+            ImGui.SetNextWindowSizeConstraints(new Vector2(300, 300), new Vector2(float.MaxValue, float.MaxValue));
+            if (!ImGui.Begin($"{_plugin.Name} Config", ref _settingsVisible, ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoCollapse)) return;
+
+            if (ImGui.BeginChild("##scollingregionSettings", new Vector2(0, -ImGui.GetTextLineHeight() * 2))) {
+                if (ImGui.CollapsingHeader("General Settings", ImGuiTreeNodeFlags.DefaultOpen))
+                    DrawGeneral();
+
+                if (ImGui.CollapsingHeader("Alias Settings"))
+                    DrawAlias();
+
+                ImGui.EndChild();
             }
+
+            DrawFooter();
             ImGui.End();
         }
 
-        #region DebugWindow
+        private void DrawAlias() {
+            var newAliasAdded = false;
+            if (ImGui.Button("New Alias")) {
+                cfg_aliasList.Insert(0, TeleportAlias.Empty);
+                newAliasAdded = true;
+            }
+            ImGui.SameLine();
+            ImGui.TextUnformatted("");
+            ImGui.SameLine();
+            if (ImGui.Button("Delete")) {
+                if (cfg_aliasList.Count > 0)
+                    cfg_aliasList.RemoveAt(0);
+            }
+            var deleteAliasHovered = ImGui.IsItemHovered();
+            
+            ImGui.SameLine();
+            if (ImGui.Button("Delete Selected"))
+                cfg_aliasList.RemoveAll(a => a.Selected);
+
+            ImGui.SameLine();
+            if (ImGui.Button("Delete All")) {
+                ImGui.OpenPopupOnItemClick("deleteallpopup", 0);
+            }
+
+            if (ImGui.BeginPopup("deleteallpopup")) {
+                ImGui.TextColored(ColorRed, "Are you sure you want to delete ALL aliases?");
+                if (ImGui.Button("No", new Vector2(80, ImGui.GetTextLineHeightWithSpacing()))) {
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.SameLine(ImGui.GetWindowWidth() - 90);
+                if (ImGui.Button("Yes", new Vector2(80, ImGui.GetTextLineHeightWithSpacing()))) {
+                    cfg_aliasList.Clear();
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.EndPopup();
+            }
+            
+            ImGui.Separator();
+            if (!ImGui.BeginChild("##scrollingregionAlias", Vector2.Zero)) 
+                return;
+            if (newAliasAdded) ImGui.SetScrollHereY();
+            ImGui.Columns(2);
+            ImGui.TextUnformatted("Alias"); ImGui.NextColumn();
+            ImGui.TextUnformatted("Target Aetheryte"); ImGui.NextColumn();
+            ImGui.Separator();
+
+            for (var i = 0; i < cfg_aliasList.Count; i++) {
+                var alias = cfg_aliasList[i];
+                if (deleteAliasHovered && i == 0) ImGui.ArrowButton("delete_indicator", ImGuiDir.Right);
+                else ImGui.Checkbox($"##hidelabelAliasSelected{i}", ref alias.Selected);
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 45);
+                if(deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Alias);
+                else if (ImGui.InputText($"##hidelabelAliasKey{i}", alias.AliasBuffer, alias.BufferSize, ImGuiInputTextFlags.CharsNoBlank))
+                    alias.RemoveInvalidChars();
+                ImGui.NextColumn();
+                ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 15);
+                if (deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Value);
+                else if (ImGui.InputText($"##hidelabelAliasValue{i}", alias.ValueBuffer, alias.BufferSize))
+                    alias.RemoveInvalidChars();
+                ImGui.NextColumn();
+            }
+            
+            ImGui.EndChild();
+            ImGui.Columns(1);
+        }
+
+        private void DrawGeneral() {
+            ImGui.TextUnformatted("Default Teleport Type:");
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(100);
+            ImGui.Combo("##hidelabelTypeCombo", ref cfg_tpTypeSelect, TpTypesList, TpTypesList.Length);
+            ImGui.Checkbox("Skip Ticket Popup", ref cfg_useTicketWithoutAsking);
+            ImGui.Checkbox("Use Tickets if Gil Price is above:", ref cfg_useGilThreshold);
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.InputInt("##hidelabelInputGil", ref cfg_inputGilThreshold, 1, 100) && cfg_inputGilThreshold < 0) cfg_inputGilThreshold = 0;
+        }
+
+        private void DrawFooter() {
+            ImGui.Separator();
+            if (ImGui.Button("Save")) 
+                SaveSettings();
+            ImGui.SameLine();
+            if (ImGui.Button("Save and Close")) {
+                SaveSettings();
+                SettingsVisible = false;
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Close")) SettingsVisible = false;
+        }
+
+        #endregion
+
+        #region Debug Window
 
         private readonly List<string> dbg_locations = new List<string> {"GetList to Update"};
         private readonly List<string> dbg_aetheryteId = new List<string> {"Empty"};
         private readonly List<string> dbg_subIndex = new List<string> {"Empty"};
         private readonly List<string> dbg_zoneId = new List<string> {"Empty"};
         private int dbg_selected;
-
+        
         public void DrawDebug() {
             var windowSize = new Vector2(350, 315);
             ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
-            if (ImGui.Begin($"{_plugin.Name} Debug", ref DebugVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
+            if (ImGui.Begin($"{_plugin.Name} Debug", ref _debugVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
                 ImGui.TextUnformatted($"UiModule: {TeleportManager.UiModuleAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"UiAgentModule: {TeleportManager.UiAgentModuleAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"KnownLocations: {TeleportManager.AvailableLocationsAddress.ToInt64():X8}");
@@ -99,7 +242,7 @@ namespace TeleporterPlugin {
         }
 
         #endregion
-        
+
         public void Dispose() {
             _plugin.Interface.UiBuilder.OnBuildUi -= Draw;
         }
