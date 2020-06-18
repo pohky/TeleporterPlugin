@@ -19,11 +19,11 @@ namespace TeleporterPlugin {
             Interface = pluginInterface;
             Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Config.Initialize(pluginInterface);
-            Gui = new PluginUi(this);
             TeleportManager.Init(Interface);
             TeleportManager.LogEvent += TeleportManagerOnLogEvent;
             TeleportManager.LogErrorEvent += TeleportManagerOnLogErrorEvent;
             Interface.CommandManager.AddHandler(CommandName, new CommandInfo(CommandHandler) {HelpMessage = HelpMessage});
+            Gui = new PluginUi(this);
         }
 
         private void TeleportManagerOnLogEvent(string message) {

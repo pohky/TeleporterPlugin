@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Dalamud;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
 using TeleporterPlugin.Objects;
@@ -22,13 +23,14 @@ namespace TeleporterPlugin {
             _plugin = plugin;
             LoadSettings();
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
+            _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => SettingsVisible = true;
         }
 
         private void Draw() {
             if (DebugVisible) DrawDebug();
             if (_settingsVisible) DrawSettings();
         }
-
+        
         private void LoadSettings() {
             cfg_inputGilThreshold = _plugin.Config.GilThreshold;
             cfg_useGilThreshold = _plugin.Config.UseGilThreshold;
@@ -175,7 +177,9 @@ namespace TeleporterPlugin {
         private readonly List<string> dbg_subIndex = new List<string> {"Empty"};
         private readonly List<string> dbg_zoneId = new List<string> {"Empty"};
         private int dbg_selected;
-        
+        private readonly string[] dbg_langs = Enum.GetNames(typeof(ClientLanguage));
+        private int dbg_selectedLang = (int)TeleportManager.CurrentLanguage;
+
         public void DrawDebug() {
             var windowSize = new Vector2(350, 315);
             ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
@@ -184,6 +188,10 @@ namespace TeleporterPlugin {
                 ImGui.TextUnformatted($"AetheryteList: {TeleportManager.AetheryteListAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"TeleportStatus: {TeleportManager.TeleportStatusAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"ItemCountStaticArg: {TeleportManager.ItemCountStaticArgAddress.ToInt64():X8}");
+                ImGui.TextUnformatted($"LoadedLanguage: {TeleportManager.CurrentLanguage}");
+                if (ImGui.Combo("##hidelabelLangCombo", ref dbg_selectedLang, dbg_langs, dbg_langs.Length)) {
+                    TeleportManager.DebugSetLanguage((ClientLanguage)dbg_selectedLang, _plugin.Interface);
+                }
                 ImGui.Separator();
                 
                 if (ImGui.Button("GetList")) {
@@ -202,9 +210,7 @@ namespace TeleporterPlugin {
                 if (ImGui.Button("Teleport")) TeleportManager.Teleport(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket)")) TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
-                ImGui.SameLine();
-                //if (ImGui.Button("Teleport (Map)")) TeleportManager.TeleportMap(dbg_locations[dbg_selected]);
-
+                
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(4, "##listbox");
                 ImGui.SetColumnWidth(1, 50);

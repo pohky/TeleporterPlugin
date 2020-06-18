@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Dalamud;
 using Dalamud.Plugin;
 using Lumina.Excel.GeneratedSheets;
 using TeleporterPlugin.Objects;
@@ -18,6 +19,8 @@ namespace TeleporterPlugin.Managers {
         private static TryTeleportWithTicketDelegate _tryTeleportWithTicket;
         private static GetItemCountDelegate _getItemCount;
 
+        private static readonly uint[] _privateHouseIds = {59, 60, 61, 97}; //limsa, gridania, uldah, shiro
+
         public static IntPtr AetheryteListAddress { get; private set; }
         public static IntPtr TeleportStatusAddress { get; private set; }
         public static IntPtr ItemCountStaticArgAddress { get; private set; }
@@ -26,13 +29,17 @@ namespace TeleporterPlugin.Managers {
         public static IEnumerable<TeleportLocation> AetheryteList => GetAetheryteList();
         public static event Action<string> LogEvent;
         public static event Action<string> LogErrorEvent;
-        
+
+        public static ClientLanguage CurrentLanguage = ClientLanguage.English;
+
+        internal static void DebugSetLanguage(ClientLanguage lang, DalamudPluginInterface plugin) {
+            CurrentLanguage = lang;
+            InitData(plugin);
+        }
+
         #region Teleport
 
         public static void Teleport(string aetheryteName, bool matchPartial = true) {
-#if DEBUG
-            PluginLog.Log($"Using Direct Teleport to '{aetheryteName}'");
-#endif
             var location = GetLocationByName(aetheryteName, matchPartial);
             if (!location.HasValue) {
                 LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
@@ -43,9 +50,6 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static void TeleportTicket(string aetheryteName, bool skipPopup = false, bool matchPartial = true) {
-#if DEBUG
-            PluginLog.Log($"Using Ticket Teleport to '{aetheryteName}'");
-#endif
             var location = GetLocationByName(aetheryteName, matchPartial);
             if (!location.HasValue) {
                 LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
@@ -54,26 +58,16 @@ namespace TeleporterPlugin.Managers {
 
             LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
             if (skipPopup && GetAetheryteTicketCount() > 0) {
-#if DEBUG
-                PluginLog.Log("Skipping Ticket Popup");
-#endif
                 _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, true, location.Value.SubIndex, 0);
                 return;
             }
-#if DEBUG
-            PluginLog.Log("Using Ticket Popup");
-#endif
             var result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.Value.AetheryteId, location.Value.SubIndex);
             if (!result.HasValue) {
                 LogErrorEvent?.Invoke("Unable to Teleport using Aetheryte Tickets.");
                 return;
             }
-            if (!result.Value) {
-#if DEBUG
-                PluginLog.Log("No Tickets. Fallback to Direct Teleport");
-#endif
+            if (!result.Value)
                 _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, false, location.Value.SubIndex, 0);
-            }
         }
 
         #endregion
@@ -83,10 +77,12 @@ namespace TeleporterPlugin.Managers {
         internal static string GetNameForLocation(TeleportLocation location) {
             if (!AetheryteNames.TryGetValue(location.AetheryteId, out var name))
                 return string.Empty;
-            if (!name.Equals("Estate Hall (Private)", StringComparison.OrdinalIgnoreCase))
+
+            if(!_privateHouseIds.Contains(location.AetheryteId))
                 return name;
+
             switch (location.SubIndex) {
-                case 0: name = "Estate Hall (Private)"; break;
+                case 0: break; // use default name
                 case 128: name = "Apartment"; break;
                 case var n when n >= 1 && n <= 127: 
                     name = $"Shared Estate ({location.SubIndex})"; break;
@@ -129,21 +125,24 @@ namespace TeleporterPlugin.Managers {
         #region Init
 
         public static void Init(DalamudPluginInterface plugin) {
+            CurrentLanguage = plugin.ClientState.ClientLanguage;
             InitData(plugin);
             InitDelegates(plugin);
             InitAddresses(plugin);
         }
 
         private static void InitData(DalamudPluginInterface plugin) {
-            var aetherytes = plugin.Data.GetExcelSheet<Aetheryte>();
+            var aetherytes = plugin.Data.GetExcelSheet<Aetheryte>(CurrentLanguage);
+            var placeNames = plugin.Data.GetExcelSheet<PlaceName>(CurrentLanguage);
             AetheryteNames = new Dictionary<uint, string>();
             aetherytes.GetRows().ForEach(data => {
-                var name = data.PlaceName?.Value.Name;
-                if(string.IsNullOrEmpty(name) || data.RowId <= 0) return;
-                if (name.IndexOf('<') != -1)
-                    name = name.Replace("<Emphasis>", "");
-                if(!AetheryteNames.ContainsKey(data.RowId))
-                    AetheryteNames.Add(data.RowId, name);
+                var id = data.RowId;
+                var place = data.PlaceName?.Row;
+                if(id <= 0 || !place.HasValue) return;
+                var name = placeNames.GetRow(place.Value).Name;
+                if(string.IsNullOrEmpty(name)) return;
+                if(!AetheryteNames.ContainsKey(id))
+                    AetheryteNames.Add(id, name);
             });
         }
 
