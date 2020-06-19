@@ -5,10 +5,11 @@ namespace TeleporterPlugin.Objects {
     public class TeleportAlias {
         public static TeleportAlias Empty => new TeleportAlias(null, null);
 
-        [NonSerialized] internal uint BufferSize = 128;
+        [NonSerialized] internal const uint BufferSize = 160;
         [NonSerialized] internal readonly byte[] AliasBuffer;
         [NonSerialized] internal readonly byte[] AetheryteBuffer;
         [NonSerialized] internal bool GuiSelected;
+        [NonSerialized] internal int GuiSelectedIndex;
 
         public string Alias {
             get => GetBufferValue(AliasBuffer);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud;
 using ImGuiNET;
@@ -36,7 +37,8 @@ namespace TeleporterPlugin {
             cfg_useGilThreshold = _plugin.Config.UseGilThreshold;
             cfg_tpTypeSelect = (int)_plugin.Config.DefaultTeleportType;
             cfg_skipTicketPopup = _plugin.Config.SkipTicketPopup;
-            cfg_aliasList = _plugin.Config.AliasList;
+            cfg_aliasList = new List<TeleportAlias>(_plugin.Config.AliasList.Select(a => new TeleportAlias(a.Alias, a.Aetheryte)));
+            cfg_aetheryteList = TeleportManager.AetheryteList.Select(a => a.Name).ToArray();
         }
 
         private void SaveSettings() {
@@ -44,7 +46,7 @@ namespace TeleporterPlugin {
             _plugin.Config.SkipTicketPopup = cfg_skipTicketPopup;
             _plugin.Config.UseGilThreshold = cfg_useGilThreshold;
             _plugin.Config.DefaultTeleportType = (TeleportType)cfg_tpTypeSelect;
-            _plugin.Config.AliasList = cfg_aliasList;
+            _plugin.Config.AliasList = new List<TeleportAlias>(cfg_aliasList.Select(a => new TeleportAlias(a.Alias, a.Aetheryte)));
             _plugin.Config.Save();
         }
 
@@ -58,6 +60,7 @@ namespace TeleporterPlugin {
         private int cfg_inputGilThreshold;
         private bool cfg_skipTicketPopup;
         private List<TeleportAlias> cfg_aliasList;
+        private string[] cfg_aetheryteList;
 
         public void DrawSettings() {
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
@@ -85,7 +88,8 @@ namespace TeleporterPlugin {
                 newAliasAdded = true;
             }
             ImGui.SameLine();
-            ImGui.TextUnformatted("");
+            ImGui.Spacing();
+            //ImGui.TextUnformatted("");
             ImGui.SameLine();
             if (ImGui.Button("Delete")) {
                 if (cfg_aliasList.Count > 0)
@@ -98,9 +102,8 @@ namespace TeleporterPlugin {
                 cfg_aliasList.RemoveAll(a => a.GuiSelected);
 
             ImGui.SameLine();
-            if (ImGui.Button("Delete All")) {
+            if (ImGui.Button("Delete All"))
                 ImGui.OpenPopupOnItemClick("deleteallpopup", 0);
-            }
 
             if (ImGui.BeginPopup("deleteallpopup")) {
                 ImGui.TextColored(ColorRed, "Are you sure you want to delete ALL aliases?");
@@ -131,11 +134,25 @@ namespace TeleporterPlugin {
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 45);
                 if (deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Alias);
-                else ImGui.InputText($"##hidelabelAliasKey{i}", alias.AliasBuffer, alias.BufferSize, ImGuiInputTextFlags.CharsNoBlank);
+                else ImGui.InputText($"##hidelabelAliasKey{i}", alias.AliasBuffer, TeleportAlias.BufferSize, ImGuiInputTextFlags.CharsNoBlank);
                 ImGui.NextColumn();
-                ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 15);
                 if (deleteAliasHovered && i == 0) ImGui.TextColored(ColorRed, alias.Aetheryte);
-                else ImGui.InputText($"##hidelabelAliasValue{i}", alias.AetheryteBuffer, alias.BufferSize);
+                else {
+                    ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 45);
+                    ImGui.InputText($"##hidelabelAliasValue{i}", alias.AetheryteBuffer, TeleportAlias.BufferSize);
+                    ImGui.SameLine();
+                    if (ImGui.BeginCombo($"##hidelabelAliasSelect{i}", "", ImGuiComboFlags.NoPreview)) {
+                        for (var a = 0; a < cfg_aetheryteList.Length; a++) {
+                            var selected = alias.GuiSelectedIndex == a;
+                            if (ImGui.Selectable(cfg_aetheryteList[a], selected)) {
+                                alias.GuiSelectedIndex = a;
+                                alias.Aetheryte = cfg_aetheryteList[a];
+                            }
+                            if(selected) ImGui.SetItemDefaultFocus();
+                        }
+                        ImGui.EndCombo();
+                    }
+                }
                 ImGui.NextColumn();
             }
             
@@ -188,7 +205,7 @@ namespace TeleporterPlugin {
                 ImGui.TextUnformatted($"AetheryteList: {TeleportManager.AetheryteListAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"TeleportStatus: {TeleportManager.TeleportStatusAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"ItemCountStaticArg: {TeleportManager.ItemCountStaticArgAddress.ToInt64():X8}");
-                ImGui.TextUnformatted($"LoadedLanguage: {TeleportManager.CurrentLanguage}");
+                ImGui.TextUnformatted("Language:"); ImGui.SameLine();
                 if (ImGui.Combo("##hidelabelLangCombo", ref dbg_selectedLang, dbg_langs, dbg_langs.Length)) {
                     TeleportManager.DebugSetLanguage((ClientLanguage)dbg_selectedLang, _plugin.Interface);
                 }

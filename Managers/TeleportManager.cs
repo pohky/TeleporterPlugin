@@ -97,7 +97,7 @@ namespace TeleporterPlugin.Managers {
                 return string.Empty;
 
             if(!_privateHouseIds.Contains(location.AetheryteId))
-                return CurrentLanguage == ClientLanguage.German ? name.Replace("", "") : name;
+                return name;
             
             switch (location.SubIndex) {
                 case 0: break; // use default name
@@ -106,9 +106,6 @@ namespace TeleporterPlugin.Managers {
                     break;
                 case var n when n >= 1 && n <= 127: 
                     name = _sharedHouseNames[CurrentLanguage].Replace("<number>", $"{location.SubIndex}");
-#if DEBUG
-                    if (location.ZoneId == 420) name = $"Debug {name}";
-#endif
                     break;
                 default:
                     name = $"Unknown Estate ({location.AetheryteId}, {location.SubIndex})";
@@ -131,7 +128,13 @@ namespace TeleporterPlugin.Managers {
             yield return new TeleportLocation {
                 AetheryteId = 97,
                 GilCost = 6996,
-                SubIndex = 69,
+                SubIndex = 1,
+                ZoneId = 420
+            };
+            yield return new TeleportLocation {
+                AetheryteId = 60,
+                GilCost = 6996,
+                SubIndex = 2,
                 ZoneId = 420
             };
 #endif
@@ -172,6 +175,8 @@ namespace TeleporterPlugin.Managers {
                 if(id <= 0 || !place.HasValue) return;
                 var name = placeNames.GetRow(place.Value).Name;
                 if(string.IsNullOrEmpty(name)) return;
+                if (CurrentLanguage == ClientLanguage.German)
+                    name = name.Replace("", "");
                 if(!AetheryteNames.ContainsKey(id))
                     AetheryteNames.Add(id, name);
             });
