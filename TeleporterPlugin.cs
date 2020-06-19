@@ -9,7 +9,6 @@ using TeleporterPlugin.Objects;
 namespace TeleporterPlugin {
     public class TeleporterPlugin : IDalamudPlugin {
         private const string CommandName = "/tp";
-        private const string HelpMessage = "/tp <name> <type>. Use '/tp' for more info.";
         public string Name => "Teleporter";
         public PluginUi Gui { get; private set; }
         public DalamudPluginInterface Interface { get; private set; }
@@ -22,7 +21,9 @@ namespace TeleporterPlugin {
             TeleportManager.Init(Interface);
             TeleportManager.LogEvent += TeleportManagerOnLogEvent;
             TeleportManager.LogErrorEvent += TeleportManagerOnLogErrorEvent;
-            Interface.CommandManager.AddHandler(CommandName, new CommandInfo(CommandHandler) {HelpMessage = HelpMessage});
+            Interface.CommandManager.AddHandler(CommandName, new CommandInfo(CommandHandler) {
+                HelpMessage = "/tp <name> <type>. Use '/tp' for more info."
+            });
             Gui = new PluginUi(this);
         }
 
@@ -58,6 +59,7 @@ namespace TeleporterPlugin {
 
         private void HandleTeleportArguments(List<string> args) {
             string locationString;
+            
             var type = GetTeleportTypeFromArguments(args);
             if (!type.HasValue) {
                 type = Config.DefaultTeleportType;
@@ -78,9 +80,9 @@ namespace TeleporterPlugin {
             
             switch (type) {
                 case TeleportType.Direct:
-                    TeleportManager.Teleport(locationString); break;
+                    TeleportManager.Teleport(locationString, Config.AllowPartialMatch); break;
                 case TeleportType.Ticket:
-                    TeleportManager.TeleportTicket(locationString, Config.SkipTicketPopup); break;
+                    TeleportManager.TeleportTicket(locationString, Config.SkipTicketPopup, Config.AllowPartialMatch); break;
                 default:
                     TeleportManagerOnLogErrorEvent($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
                     break;

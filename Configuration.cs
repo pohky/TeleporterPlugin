@@ -12,6 +12,7 @@ namespace TeleporterPlugin {
         public TeleportType DefaultTeleportType { get; set; } = TeleportType.Direct;
         public bool SkipTicketPopup { get; set; }
         public bool UseGilThreshold { get; set; }
+        public bool AllowPartialMatch { get; set; }
         public int GilThreshold { get; set; } = 999;
         public List<TeleportAlias> AliasList { get; set; } = new List<TeleportAlias>();
 
