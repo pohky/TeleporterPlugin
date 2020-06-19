@@ -9,7 +9,7 @@ using TeleporterPlugin.Objects;
 namespace TeleporterPlugin {
     public class TeleporterPlugin : IDalamudPlugin {
         private const string CommandName = "/tp";
-        private const string HelpMessage = "/tp <name> <type>. Use '/tp help' for more info.";
+        private const string HelpMessage = "/tp <name> <type>. Use '/tp' for more info.";
         public string Name => "Teleporter";
         public PluginUi Gui { get; private set; }
         public DalamudPluginInterface Interface { get; private set; }
@@ -38,13 +38,13 @@ namespace TeleporterPlugin {
 
         private void CommandHandler(string command, string arguments) {
             var arg = arguments.Trim().Replace("\"", "");
-            if (string.IsNullOrEmpty(arg) || arg.Equals("config", StringComparison.OrdinalIgnoreCase)) {
-                Gui.SettingsVisible = !Gui.SettingsVisible;
+            if (string.IsNullOrEmpty(arg) || arg.Equals("help", StringComparison.OrdinalIgnoreCase)) {
+                PrintHelpText();
                 return;
             }
 
-            if (arg.Equals("help", StringComparison.OrdinalIgnoreCase)) {
-                PrintHelpText();
+            if (arg.Equals("config", StringComparison.OrdinalIgnoreCase)) {
+                Gui.SettingsVisible = !Gui.SettingsVisible;
                 return;
             }
 
@@ -107,6 +107,7 @@ namespace TeleporterPlugin {
 
         private void PrintHelpText() {
             var helpText = $"{Name} Help:\n" +
+                           "/tp help - Show this Message\n" +
 #if DEBUG
                            "/tp debug - Show Debug Window\n" +
 #endif
