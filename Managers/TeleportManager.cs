@@ -124,20 +124,6 @@ namespace TeleporterPlugin.Managers {
         private static IEnumerable<TeleportLocation> GetAetheryteList() {
             var ptr = _getAvalibleLocationList?.Invoke(AetheryteListAddress, 0) ?? IntPtr.Zero;
             if (ptr == IntPtr.Zero) yield break;
-#if DEBUG
-            yield return new TeleportLocation {
-                AetheryteId = 97,
-                GilCost = 6996,
-                SubIndex = 1,
-                ZoneId = 420
-            };
-            yield return new TeleportLocation {
-                AetheryteId = 60,
-                GilCost = 6996,
-                SubIndex = 2,
-                ZoneId = 420
-            };
-#endif
             var start = Marshal.ReadIntPtr(ptr, 0);
             var end = Marshal.ReadIntPtr(ptr, 8);
             var size = Marshal.SizeOf<TeleportLocation>();
