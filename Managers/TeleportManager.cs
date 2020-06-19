@@ -32,6 +32,20 @@ namespace TeleporterPlugin.Managers {
 
         public static ClientLanguage CurrentLanguage = ClientLanguage.English;
 
+        private static readonly Dictionary<ClientLanguage, string> _apartmentNames = new Dictionary<ClientLanguage, string>{
+            {ClientLanguage.English, "Apartment"},
+            {ClientLanguage.German, "Wohnung"},
+            {ClientLanguage.French, "Appartement"},
+            {ClientLanguage.Japanese, "アパルトメント"}
+        };
+
+        private static readonly Dictionary<ClientLanguage, string> _sharedHouseNames = new Dictionary<ClientLanguage, string> {
+            {ClientLanguage.English, "Shared Estate (<number>)"},
+            {ClientLanguage.German, "Wohngemeinschaft (<number>)"},
+            {ClientLanguage.French, "Maison (<number>)"},
+            {ClientLanguage.Japanese, "ハウス（シェア：<number>）"}
+        };
+
         internal static void DebugSetLanguage(ClientLanguage lang, DalamudPluginInterface plugin) {
             CurrentLanguage = lang;
             InitData(plugin);
@@ -45,7 +59,7 @@ namespace TeleporterPlugin.Managers {
                 LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
                 return;
             }
-            LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
+            LogEvent?.Invoke($"Teleporting to '{location.Value.Name}'");
             _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, false, location.Value.SubIndex, 0);
         }
 
@@ -56,18 +70,22 @@ namespace TeleporterPlugin.Managers {
                 return;
             }
 
-            LogEvent?.Invoke($"Starting Teleport to '{location.Value.Name}'");
-            if (skipPopup && GetAetheryteTicketCount() > 0) {
-                _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, true, location.Value.SubIndex, 0);
-                return;
+            if (skipPopup) {
+                var tickets = GetAetheryteTicketCount();
+                if (tickets > 0) {
+                    LogEvent?.Invoke($"Teleporting to '{location.Value.Name}' (Tickets: {tickets})");
+                    _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, true, location.Value.SubIndex, 0);
+                    return;
+                }
             }
             var result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.Value.AetheryteId, location.Value.SubIndex);
             if (!result.HasValue) {
-                LogErrorEvent?.Invoke("Unable to Teleport using Aetheryte Tickets.");
+                LogErrorEvent?.Invoke("Unable to Teleport using Aetheryte Tickets without Popup.");
                 return;
             }
-            if (!result.Value)
-                _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, false, location.Value.SubIndex, 0);
+            if (result.Value) return;
+            LogEvent?.Invoke($"Teleporting to '{location.Value.Name}'");
+            _sendCommand?.Invoke(0xCA, location.Value.AetheryteId, false, location.Value.SubIndex, 0);
         }
 
         #endregion
@@ -79,15 +97,21 @@ namespace TeleporterPlugin.Managers {
                 return string.Empty;
 
             if(!_privateHouseIds.Contains(location.AetheryteId))
-                return name;
-
+                return CurrentLanguage == ClientLanguage.German ? name.Replace("", "") : name;
+            
             switch (location.SubIndex) {
                 case 0: break; // use default name
-                case 128: name = "Apartment"; break;
+                case 128:
+                    name = _apartmentNames[CurrentLanguage];
+                    break;
                 case var n when n >= 1 && n <= 127: 
-                    name = $"Shared Estate ({location.SubIndex})"; break;
+                    name = _sharedHouseNames[CurrentLanguage].Replace("<number>", $"{location.SubIndex}");
+#if DEBUG
+                    if (location.ZoneId == 420) name = $"Debug {name}";
+#endif
+                    break;
                 default:
-                    name = $"Estate Hall ({(location.AetheryteId * 397) ^ location.SubIndex})";
+                    name = $"Unknown Estate ({location.AetheryteId}, {location.SubIndex})";
                     break;
             }
             return name;
@@ -103,7 +127,14 @@ namespace TeleporterPlugin.Managers {
         private static IEnumerable<TeleportLocation> GetAetheryteList() {
             var ptr = _getAvalibleLocationList?.Invoke(AetheryteListAddress, 0) ?? IntPtr.Zero;
             if (ptr == IntPtr.Zero) yield break;
-
+#if DEBUG
+            yield return new TeleportLocation {
+                AetheryteId = 97,
+                GilCost = 6996,
+                SubIndex = 69,
+                ZoneId = 420
+            };
+#endif
             var start = Marshal.ReadIntPtr(ptr, 0);
             var end = Marshal.ReadIntPtr(ptr, 8);
             var size = Marshal.SizeOf<TeleportLocation>();

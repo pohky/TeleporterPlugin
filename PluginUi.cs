@@ -206,11 +206,17 @@ namespace TeleporterPlugin {
                         dbg_zoneId.Add(location.ZoneId.ToString());
                     }
                 }
+
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport")) TeleportManager.Teleport(dbg_locations[dbg_selected]);
+                if (ImGui.Button("Teleport")) 
+                    TeleportManager.Teleport(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport (Ticket)")) TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
-                
+                if (ImGui.Button("Teleport (Ticket)")) 
+                    TeleportManager.TeleportTicket(dbg_locations[dbg_selected], true);
+                ImGui.SameLine();
+                if (ImGui.Button("Teleport (Ticket + Popup)"))
+                    TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
+
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(4, "##listbox");
                 ImGui.SetColumnWidth(1, 50);
