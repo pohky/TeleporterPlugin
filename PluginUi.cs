@@ -23,7 +23,6 @@ namespace TeleporterPlugin {
 
         public PluginUi(TeleporterPlugin plugin) {
             _plugin = plugin;
-            LoadSettings();
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
             _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => SettingsVisible = true;
         }

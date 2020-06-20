@@ -31,6 +31,7 @@ namespace TeleporterPlugin.Managers {
         public static event Action<string> LogErrorEvent;
 
         public static ClientLanguage CurrentLanguage = ClientLanguage.English;
+        private static DalamudPluginInterface _plugin;
 
         private static readonly Dictionary<ClientLanguage, string> _apartmentNames = new Dictionary<ClientLanguage, string>{
             {ClientLanguage.English, "Apartment"},
@@ -78,7 +79,9 @@ namespace TeleporterPlugin.Managers {
                     return;
                 }
             }
-            var result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.Value.AetheryteId, location.Value.SubIndex);
+            var result = (bool?)null;
+            if(TeleportStatusAddress != IntPtr.Zero)
+                result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.Value.AetheryteId, location.Value.SubIndex);
             if (!result.HasValue) {
                 LogErrorEvent?.Invoke("Unable to Teleport using Aetheryte Tickets without Popup.");
                 return;
@@ -122,6 +125,8 @@ namespace TeleporterPlugin.Managers {
         }
 
         private static IEnumerable<TeleportLocation> GetAetheryteList() {
+            if (AetheryteListAddress == IntPtr.Zero || _plugin?.ClientState.LocalPlayer == null)
+                yield break;
             var ptr = _getAvalibleLocationList?.Invoke(AetheryteListAddress, 0) ?? IntPtr.Zero;
             if (ptr == IntPtr.Zero) yield break;
             var start = Marshal.ReadIntPtr(ptr, 0);
@@ -145,6 +150,7 @@ namespace TeleporterPlugin.Managers {
         #region Init
 
         public static void Init(DalamudPluginInterface plugin) {
+            _plugin = plugin;
             CurrentLanguage = plugin.ClientState.ClientLanguage;
             InitData(plugin);
             InitDelegates(plugin);
