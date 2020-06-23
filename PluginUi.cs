@@ -198,12 +198,13 @@ namespace TeleporterPlugin {
             }
 
             ImGui.TextUnformatted("Language:");
+            if (cfg_showTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip("Change the Language used for Aetheryte Names.\n" +
+                                 $"(default) Client = Game Language [{_plugin.Interface.ClientState.ClientLanguage}]");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(200);
             if (ImGui.Combo("##hidelabelLangSetting", ref cfg_selectedLanguage, cfg_languageList, cfg_languageList.Length))
                 SaveSettings();
-            if (cfg_showTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Change the Language used for Aetheryte Names");
         }
 
         private void UpdateAetheryteList() {
