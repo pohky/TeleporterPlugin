@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud;
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
 using TeleporterPlugin.Managers;
@@ -8,21 +9,33 @@ using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin {
     public class TeleporterPlugin : IDalamudPlugin {
-        private const string CommandName = "/tp";
         public string Name => "Teleporter";
         public PluginUi Gui { get; private set; }
         public DalamudPluginInterface Interface { get; private set; }
         public Configuration Config { get; private set; }
+        public TeleportManager Manager { get; private set; }
+
+        public ClientLanguage Language {
+            get {
+                if (Config.TeleporterLanguage == TeleporterLanguage.Client)
+                    return Interface.ClientState.ClientLanguage;
+                return (ClientLanguage)Config.TeleporterLanguage;
+            }
+        }
 
         public void Initialize(DalamudPluginInterface pluginInterface) {
             Interface = pluginInterface;
             Config = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Config.Initialize(pluginInterface);
-            TeleportManager.Init(Interface);
-            TeleportManager.LogEvent += TeleportManagerOnLogEvent;
-            TeleportManager.LogErrorEvent += TeleportManagerOnLogErrorEvent;
-            Interface.CommandManager.AddHandler(CommandName, new CommandInfo(CommandHandler) {
-                HelpMessage = "/tp <name> <type>. Use '/tp' for more info."
+            AetheryteDataManager.Init(pluginInterface);
+            Manager = new TeleportManager(this);
+            Manager.LogEvent += TeleportManagerOnLogEvent;
+            Manager.LogErrorEvent += TeleportManagerOnLogErrorEvent;
+            Interface.CommandManager.AddHandler("/tp", new CommandInfo(CommandHandler) {
+                HelpMessage = "/tp <name> - Teleport to <name>"
+            });
+            Interface.CommandManager.AddHandler("/tpt", new CommandInfo(CommandHandler) {
+                HelpMessage = "/tpt <name> - Teleport to <name> using Aetheryte Tickets if possible"
             });
             Gui = new PluginUi(this);
         }
@@ -40,7 +53,17 @@ namespace TeleporterPlugin {
         private void CommandHandler(string command, string arguments) {
             var arg = arguments.Trim().Replace("\"", "");
             if (string.IsNullOrEmpty(arg) || arg.Equals("help", StringComparison.OrdinalIgnoreCase)) {
-                PrintHelpText();
+                var helpText =
+                    $"{Name} Help:\n" +
+                    $"{command} help - Show this Message\n" +
+#if DEBUG
+                    $"{command} debug - Show Debug Window\n" +
+#endif
+                    $"{command} config - Show Settings Window\n";
+                if(command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
+                    helpText += $"{command} <name> - Teleport to <name> using Aetheryte Tickets if possible (e.g. /tpt New Gridania)";
+                else helpText += $"{command} <name> - Teleport to <name> (e.g. /tp New Gridania)";
+                Interface.Framework.Gui.Chat.Print(helpText);
                 return;
             }
 
@@ -53,36 +76,37 @@ namespace TeleporterPlugin {
                 Gui.DebugVisible = !Gui.DebugVisible;
                 return;
             }
-
-            HandleTeleportArguments(SplitArguments(arg));
+            if(command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
+                HandleTeleportArguments(SplitArguments(arg), TeleportType.Ticket);
+            else HandleTeleportArguments(SplitArguments(arg), TeleportType.Direct);
         }
-
-        private void HandleTeleportArguments(List<string> args) {
+        
+        private void HandleTeleportArguments(List<string> args, TeleportType tpType) {
             string locationString;
-            
-            var type = GetTeleportTypeFromArguments(args);
-            if (!type.HasValue) {
-                type = Config.DefaultTeleportType;
+
+            if (!TryGetTeleportType(args, out var type)) {
+                type = tpType;
                 locationString = string.Join(" ", args);
             } else locationString = string.Join(" ", args.Take(args.Count - 1));
-
+            
             if (TryGetAlias(locationString, out var alias))
                 locationString = alias.Aetheryte;
 
             if (Config.UseGilThreshold) {
-                var location = TeleportManager.GetLocationByName(locationString);
-                if (location.HasValue) {
-                    var price = (int)location.Value.GilCost;
-                    if (price > Config.GilThreshold)
+                var location = Manager.GetLocationByName(locationString);
+                if (location != null) {
+                    if (location.GilCost > Config.GilThreshold)
                         type = TeleportType.Ticket;
                 }
             }
-            
+
             switch (type) {
                 case TeleportType.Direct:
-                    TeleportManager.Teleport(locationString, Config.AllowPartialMatch); break;
+                    Manager.Teleport(locationString, Config.AllowPartialMatch);
+                    break;
                 case TeleportType.Ticket:
-                    TeleportManager.TeleportTicket(locationString, Config.SkipTicketPopup, Config.AllowPartialMatch); break;
+                    Manager.TeleportTicket(locationString, Config.SkipTicketPopup, Config.AllowPartialMatch);
+                    break;
                 default:
                     TeleportManagerOnLogErrorEvent($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
                     break;
@@ -94,38 +118,22 @@ namespace TeleporterPlugin {
             return alias != null;
         }
 
-        private static TeleportType? GetTeleportTypeFromArguments(IEnumerable<string> args) {
+        private static bool TryGetTeleportType(IEnumerable<string> args, out TeleportType type) {
             var last = args.LastOrDefault() ?? string.Empty;
-            if (Enum.TryParse<TeleportType>(last, true, out var type))
-                return type;
-            return null;
+            return Enum.TryParse(last, true, out type);
         }
-
+        
         private static List<string> SplitArguments(string args) {
             if (string.IsNullOrEmpty(args) || string.IsNullOrWhiteSpace(args))
                 return new List<string>();
             return new List<string>(args.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries));
         }
 
-        private void PrintHelpText() {
-            var helpText = $"{Name} Help:\n" +
-                           "/tp help - Show this Message\n" +
-#if DEBUG
-                           "/tp debug - Show Debug Window\n" +
-#endif
-                           "/tp config - Show Settings Window\n" +
-                           "/tp <name> <type>\n" +
-                           "name: Aetheryte Name (e.g. New Gridania)\n" +
-                           "type: (optional) The type of Teleport to use\n" +
-                           "  -> ticket - Teleport using Aetheryte Tickets\n" +
-                           "  -> direct - Teleport without asking for anything";
-            Interface.Framework.Gui.Chat.Print(helpText);
-        }
-
         public void Dispose() {
-            TeleportManager.LogEvent -= TeleportManagerOnLogEvent;
-            TeleportManager.LogErrorEvent -= TeleportManagerOnLogErrorEvent;
-            Interface.CommandManager.RemoveHandler(CommandName);
+            Manager.LogEvent -= TeleportManagerOnLogEvent;
+            Manager.LogErrorEvent -= TeleportManagerOnLogErrorEvent;
+            Interface.CommandManager.RemoveHandler("/tp");
+            Interface.CommandManager.RemoveHandler("/tpt");
             Gui?.Dispose();
         }
     }

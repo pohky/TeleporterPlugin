@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud;
-using Dalamud.Plugin;
 using ImGuiNET;
-using TeleporterPlugin.Managers;
 using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin {
@@ -35,11 +32,10 @@ namespace TeleporterPlugin {
         private void LoadSettings() {
             cfg_inputGilThreshold = _plugin.Config.GilThreshold;
             cfg_useGilThreshold = _plugin.Config.UseGilThreshold;
-            cfg_tpTypeSelect = (int)_plugin.Config.DefaultTeleportType;
             cfg_skipTicketPopup = _plugin.Config.SkipTicketPopup;
             cfg_allowPartialMatch = _plugin.Config.AllowPartialMatch;
             cfg_aliasList = _plugin.Config.AliasList;
-            cfg_aetheryteList = TeleportManager.AetheryteList.Select(a => a.Name).ToArray();
+            cfg_selectedLanguage = (int)_plugin.Config.TeleporterLanguage;
         }
 
         private void SaveSettings() {
@@ -47,18 +43,15 @@ namespace TeleporterPlugin {
             _plugin.Config.AllowPartialMatch = cfg_allowPartialMatch;
             _plugin.Config.SkipTicketPopup = cfg_skipTicketPopup;
             _plugin.Config.UseGilThreshold = cfg_useGilThreshold;
-            _plugin.Config.DefaultTeleportType = (TeleportType)cfg_tpTypeSelect;
             _plugin.Config.AliasList = cfg_aliasList;
+            _plugin.Config.TeleporterLanguage = (TeleporterLanguage)cfg_selectedLanguage;
             _plugin.Config.Save();
-            PluginLog.Log("Settings Saved");
         }
 
         #region Settings Window
 
         private static readonly Vector4 ColorRed = new Vector4(255, 0, 0, 255);
-        private static readonly string[] TpTypesList = Enum.GetNames(typeof(TeleportType));
 
-        private int cfg_tpTypeSelect;
         private bool cfg_useGilThreshold;
         private int cfg_inputGilThreshold;
         private bool cfg_skipTicketPopup;
@@ -66,6 +59,9 @@ namespace TeleporterPlugin {
         private bool cfg_showTooltips;
         private List<TeleportAlias> cfg_aliasList;
         private string[] cfg_aetheryteList;
+        private DateTime cfg_lastAetheryteListUpdate = DateTime.MinValue;
+        private readonly string[] cfg_languageList = Enum.GetNames(typeof(TeleporterLanguage));
+        private int cfg_selectedLanguage;
 
         public void DrawSettings() {
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
@@ -73,8 +69,7 @@ namespace TeleporterPlugin {
             if (!ImGui.Begin($"{_plugin.Name} Config", ref _settingsVisible, ImGuiWindowFlags.NoScrollWithMouse))
                 return;
             
-            //if (ImGui.BeginChild("##scollingregionSettings", new Vector2(0, -ImGui.GetTextLineHeight() * 2))) {
-            if (ImGui.BeginChild("##scollingregionSettings")) {
+            if (ImGui.BeginChild("##scrollingregionSettings")) {
                 if (ImGui.CollapsingHeader("General Settings", ImGuiTreeNodeFlags.DefaultOpen))
                     DrawGeneral();
 
@@ -84,7 +79,6 @@ namespace TeleporterPlugin {
 
                 ImGui.EndChild();
             }
-            //DrawFooter();
             ImGui.End();
         }
 
@@ -137,6 +131,7 @@ namespace TeleporterPlugin {
             ImGui.TextUnformatted("Target Aetheryte"); ImGui.NextColumn();
             ImGui.Separator();
 
+            UpdateAetheryteList();
             for (var i = 0; i < cfg_aliasList.Count; i++) {
                 var alias = cfg_aliasList[i];
                 if (deleteAliasHovered && i == 0) ImGui.ArrowButton("delete_indicator", ImGuiDir.Right);
@@ -173,14 +168,10 @@ namespace TeleporterPlugin {
         }
 
         private void DrawGeneral() {
-            ImGui.TextUnformatted("Default Teleport Type:");
+            if(ImGui.Checkbox("Allow partial Name matching", ref cfg_allowPartialMatch)) SaveSettings();
             if (cfg_showTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Sets the default teleport type used when no argument is given.\ne.g.:\n" +
-                                 "'/tp Kugane' will use the Type set here\n" +
-                                 "'/tp Kugane ticket' will always use Ticket and ignore this Setting");
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.Combo("##hidelabelTypeCombo", ref cfg_tpTypeSelect, TpTypesList, TpTypesList.Length)) SaveSettings();
+                ImGui.SetTooltip("Matches the first Aetheryte found that starts with ...\n" +
+                                 "e.g.: 'kug' matches 'Kugane' or 'new' matches 'New Gridania'");
 
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
             ImGui.TextUnformatted("Tooltips");
@@ -188,20 +179,15 @@ namespace TeleporterPlugin {
             ImGui.SameLine();
             ImGui.Checkbox("##hidelabelTooltips", ref cfg_showTooltips);
 
-            if(ImGui.Checkbox("Allow partial Name matching", ref cfg_allowPartialMatch)) SaveSettings();
-            if (cfg_showTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Matches the first Aetheryte found that starts with ...\n" +
-                                 "e.g.: 'kug' matches 'Kugane' or 'new' matches 'New Gridania'");
-
             if(ImGui.Checkbox("Skip Ticket Popup", ref cfg_skipTicketPopup)) SaveSettings();
             if (cfg_showTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Removes the 'Use an aetheryte ticket to teleport...' popup when using the /tp commands");
+                ImGui.SetTooltip("Removes the 'Use an aetheryte ticket to teleport...' popup when using Teleporter commands");
 
             if(ImGui.Checkbox("Use Tickets if Gil Price is above:", ref cfg_useGilThreshold)) SaveSettings();
             if (cfg_showTooltips && ImGui.IsItemHovered()) 
-                ImGui.SetTooltip("Always attempts to use Aetheryte Tickets if the Teleport cost is greater than this value.\n" +
-                                 "Will ignore the default type and arguments used in commands.\n" +
-                                 "e.g.: '/tp Kugane direct' will still try to use a ticket if the price is above the set value");
+                ImGui.SetTooltip("Attempt to use Aetheryte Tickets if the Teleport cost is greater than this value.\n" +
+                                 "Applies to '/tp'.\n" +
+                                 "e.g.: '/tp Kugane' will attempt to use a ticket if the price is above the set value as if '/tpt Kugane' was used");
             
             ImGui.SameLine();
             ImGui.SetNextItemWidth(150);
@@ -210,20 +196,22 @@ namespace TeleporterPlugin {
                     cfg_inputGilThreshold = 0;
                 SaveSettings();
             }
+
+            ImGui.TextUnformatted("Language:");
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(200);
+            if (ImGui.Combo("##hidelabelLangSetting", ref cfg_selectedLanguage, cfg_languageList, cfg_languageList.Length))
+                SaveSettings();
+            if (cfg_showTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip("Change the Language used for Aetheryte Names");
         }
 
-        //private void DrawFooter() {
-        //    ImGui.Separator();
-        //    if (ImGui.Button("Save")) 
-        //        SaveSettings();
-        //    ImGui.SameLine();
-        //    if (ImGui.Button("Save and Close")) {
-        //        SaveSettings();
-        //        SettingsVisible = false;
-        //    }
-        //    ImGui.SameLine();
-        //    if (ImGui.Button("Close")) SettingsVisible = false;
-        //}
+        private void UpdateAetheryteList() {
+            if(DateTime.UtcNow.Subtract(cfg_lastAetheryteListUpdate).TotalMilliseconds < 1000)
+                return;
+            cfg_aetheryteList = _plugin.Manager.AetheryteList.Select(a => a.Name).ToArray();
+            cfg_lastAetheryteListUpdate = DateTime.UtcNow;
+        }
 
         #endregion
 
@@ -234,21 +222,15 @@ namespace TeleporterPlugin {
         private readonly List<string> dbg_subIndex = new List<string> {"Empty"};
         private readonly List<string> dbg_zoneId = new List<string> {"Empty"};
         private int dbg_selected;
-        private readonly string[] dbg_langs = Enum.GetNames(typeof(ClientLanguage));
-        private int dbg_selectedLang = (int)TeleportManager.CurrentLanguage;
 
         public void DrawDebug() {
             var windowSize = new Vector2(350, 315);
             ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
             if (ImGui.Begin($"{_plugin.Name} Debug", ref DebugVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
-                ImGui.TextUnformatted($"AetheryteList: {TeleportManager.AetheryteListAddress.ToInt64():X8}");
-                ImGui.TextUnformatted($"TeleportStatus: {TeleportManager.TeleportStatusAddress.ToInt64():X8}");
-                ImGui.TextUnformatted($"ItemCountStaticArg: {TeleportManager.ItemCountStaticArgAddress.ToInt64():X8}");
-                ImGui.TextUnformatted("Language:"); ImGui.SameLine();
-                if (ImGui.Combo("##hidelabelLangCombo", ref dbg_selectedLang, dbg_langs, dbg_langs.Length)) {
-                    TeleportManager.DebugSetLanguage((ClientLanguage)dbg_selectedLang, _plugin.Interface);
-                }
+                ImGui.TextUnformatted($"AetheryteList: {_plugin.Manager.AetheryteListAddress.ToInt64():X8}");
+                ImGui.TextUnformatted($"TeleportStatus: {_plugin.Manager.TeleportStatusAddress.ToInt64():X8}");
+                ImGui.TextUnformatted($"ItemCountStaticArg: {_plugin.Manager.ItemCountStaticArgAddress.ToInt64():X8}");
                 ImGui.Separator();
                 
                 if (ImGui.Button("GetList")) {
@@ -256,7 +238,7 @@ namespace TeleporterPlugin {
                     dbg_aetheryteId.Clear();
                     dbg_subIndex.Clear();
                     dbg_zoneId.Clear();
-                    foreach (var location in TeleportManager.AetheryteList) {
+                    foreach (var location in _plugin.Manager.AetheryteList) {
                         dbg_locations.Add(location.Name);
                         dbg_aetheryteId.Add(location.AetheryteId.ToString());
                         dbg_subIndex.Add(location.SubIndex.ToString());
@@ -266,13 +248,13 @@ namespace TeleporterPlugin {
 
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport")) 
-                    TeleportManager.Teleport(dbg_locations[dbg_selected]);
+                    _plugin.Manager.Teleport(dbg_locations[dbg_selected]);
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport (Ticket)")) 
-                    TeleportManager.TeleportTicket(dbg_locations[dbg_selected], true);
+                if (ImGui.Button("Teleport (Ticket)"))
+                    _plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], true);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket + Popup)"))
-                    TeleportManager.TeleportTicket(dbg_locations[dbg_selected]);
+                    _plugin.Manager.TeleportTicket(dbg_locations[dbg_selected]);
 
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(4, "##listbox");

@@ -9,7 +9,7 @@ namespace TeleporterPlugin {
     public class Configuration : IPluginConfiguration {
         public int Version { get; set; } = 0;
 
-        public TeleportType DefaultTeleportType { get; set; } = TeleportType.Direct;
+        public TeleporterLanguage TeleporterLanguage { get; set; } = TeleporterLanguage.Client;
         public bool SkipTicketPopup { get; set; }
         public bool UseGilThreshold { get; set; }
         public bool AllowPartialMatch { get; set; }
