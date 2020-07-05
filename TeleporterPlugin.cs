@@ -29,8 +29,8 @@ namespace TeleporterPlugin {
             Config.Initialize(pluginInterface);
             AetheryteDataManager.Init(pluginInterface);
             Manager = new TeleportManager(this);
-            Manager.LogEvent += TeleportManagerOnLogEvent;
-            Manager.LogErrorEvent += TeleportManagerOnLogErrorEvent;
+            Manager.LogEvent += Log;
+            Manager.LogErrorEvent += LogError;
             Interface.CommandManager.AddHandler("/tp", new CommandInfo(CommandHandler) {
                 HelpMessage = "/tp <name> - Teleport to <name>"
             });
@@ -40,17 +40,17 @@ namespace TeleporterPlugin {
             Gui = new PluginUi(this);
         }
 
-        private void TeleportManagerOnLogEvent(string message) {
+        public void Log(string message) {
             PluginLog.Log(message);
             Interface.Framework.Gui.Chat.Print($"[{Name}] {message}");
         }
 
-        private void TeleportManagerOnLogErrorEvent(string message) {
+        public void LogError(string message) {
             PluginLog.LogError(message);
             Interface.Framework.Gui.Chat.PrintError($"[{Name}] {message}");
         }
 
-        private void CommandHandler(string command, string arguments) {
+        public void CommandHandler(string command, string arguments) {
             var arg = arguments.Trim().Replace("\"", "");
             if (string.IsNullOrEmpty(arg) || arg.Equals("help", StringComparison.OrdinalIgnoreCase)) {
                 var helpText =
@@ -59,11 +59,18 @@ namespace TeleporterPlugin {
 #if DEBUG
                     $"{command} debug - Show Debug Window\n" +
 #endif
-                    $"{command} config - Show Settings Window\n";
+                    $"{command} config - Show Settings Window\n" +
+                    $"{command} quick - Show Quick Teleport Window\n";
                 if(command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
                     helpText += $"{command} <name> - Teleport to <name> using Aetheryte Tickets if possible (e.g. /tpt New Gridania)";
                 else helpText += $"{command} <name> - Teleport to <name> (e.g. /tp New Gridania)";
                 Interface.Framework.Gui.Chat.Print(helpText);
+                return;
+            }
+
+            if (arg.Equals("quick", StringComparison.OrdinalIgnoreCase)) {
+                Config.UseFloatingWindow = true;
+                Gui.FloatingButtonsVisible = true;
                 return;
             }
 
@@ -108,7 +115,7 @@ namespace TeleporterPlugin {
                     Manager.TeleportTicket(locationString, Config.SkipTicketPopup, Config.AllowPartialMatch);
                     break;
                 default:
-                    TeleportManagerOnLogErrorEvent($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
+                    LogError($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
                     break;
             }
         }
@@ -130,8 +137,8 @@ namespace TeleporterPlugin {
         }
 
         public void Dispose() {
-            Manager.LogEvent -= TeleportManagerOnLogEvent;
-            Manager.LogErrorEvent -= TeleportManagerOnLogErrorEvent;
+            Manager.LogEvent -= Log;
+            Manager.LogErrorEvent -= LogError;
             Interface.CommandManager.RemoveHandler("/tp");
             Interface.CommandManager.RemoveHandler("/tpt");
             Gui?.Dispose();

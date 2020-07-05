@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Managers\AetheryteDataManager.cs" />
-    <Compile Include="Managers\TeleportManager - Copy.cs" />
+    <Compile Include="Objects\TeleportButton.cs" />
     <Compile Include="Objects\TeleportAlias.cs" />
     <Compile Include="Objects\TeleporterLanguage.cs" />
     <Compile Include="Objects\TeleportType.cs" />
@@ -82,6 +82,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /i /e /s /y /f "$(TargetDir)*" "%25appdata%25\XIVLauncher\testPlugins\$(ProjectName)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

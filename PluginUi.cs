@@ -9,6 +9,7 @@ namespace TeleporterPlugin {
     public class PluginUi : IDisposable {
         private readonly TeleporterPlugin _plugin;
         public bool DebugVisible;
+        public bool FloatingButtonsVisible = true;
         private bool _settingsVisible;
         public bool SettingsVisible {
             get => _settingsVisible;
@@ -22,11 +23,13 @@ namespace TeleporterPlugin {
             _plugin = plugin;
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
             _plugin.Interface.UiBuilder.OnOpenConfigUi += (sender, args) => SettingsVisible = true;
+            LoadSettings();
         }
 
         private void Draw() {
-            if (DebugVisible) DrawDebug();
-            if (_settingsVisible) DrawSettings();
+            DrawDebug();
+            DrawSettings();
+            DrawFloatingWindow();
         }
         
         private void LoadSettings() {
@@ -35,6 +38,9 @@ namespace TeleporterPlugin {
             cfg_skipTicketPopup = _plugin.Config.SkipTicketPopup;
             cfg_allowPartialMatch = _plugin.Config.AllowPartialMatch;
             cfg_aliasList = _plugin.Config.AliasList;
+            cfg_useFloatingWindow = _plugin.Config.UseFloatingWindow;
+            cfg_teleportButtons = _plugin.Config.TeleportButtons;
+            cfg_showTooltips = _plugin.Config.ShowTooltips;
             cfg_selectedLanguage = (int)_plugin.Config.TeleporterLanguage;
         }
 
@@ -44,9 +50,132 @@ namespace TeleporterPlugin {
             _plugin.Config.SkipTicketPopup = cfg_skipTicketPopup;
             _plugin.Config.UseGilThreshold = cfg_useGilThreshold;
             _plugin.Config.AliasList = cfg_aliasList;
+            _plugin.Config.UseFloatingWindow = cfg_useFloatingWindow;
+            _plugin.Config.TeleportButtons = cfg_teleportButtons;
+            _plugin.Config.ShowTooltips = cfg_showTooltips;
             _plugin.Config.TeleporterLanguage = (TeleporterLanguage)cfg_selectedLanguage;
             _plugin.Config.Save();
         }
+
+        #region Floating Window
+
+        private const uint ButtonTextBufferLength = 256;
+        private static string _buttonTextBuffer = string.Empty;
+        private string _buttonAetheryteBuffer = string.Empty;
+        private bool _buttonUseTickets;
+
+        private void DrawFloatingWindow() {
+            if (!cfg_useFloatingWindow || !FloatingButtonsVisible) return;
+            ImGui.SetNextWindowSizeConstraints(new Vector2(150, 65), new Vector2(float.MaxValue, float.MaxValue));
+            if (!ImGui.Begin("Quick Teleport", ref FloatingButtonsVisible, ImGuiWindowFlags.NoScrollWithMouse)) return;
+
+            if (ImGui.BeginChild("##floatyButtons")) {
+                if (ImGui.BeginPopupContextWindow("##addButton", 1, false)) {
+                    ImGui.TextUnformatted("Add New Button");
+                    ImGui.TextUnformatted("Name:");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(200);
+                    ImGui.InputText("##hideBtnAddText", ref _buttonTextBuffer, ButtonTextBufferLength);
+                    ImGui.TextUnformatted("Aetheryte:");
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(180);
+                    ImGui.InputText("##hideBtnAddAetheryte", ref _buttonAetheryteBuffer, ButtonTextBufferLength);
+                    ImGui.SameLine();
+                    UpdateAetheryteList();
+                    if (ImGui.BeginCombo("##hideAddSelectAetheryte", "", ImGuiComboFlags.NoPreview)) {
+                        for (var i = 0; i < cfg_aetheryteList.Length; i++) {
+                            if (ImGui.Selectable(cfg_aetheryteList[i]))
+                                _buttonAetheryteBuffer = cfg_aetheryteList[i];
+                        }
+                        ImGui.EndCombo();
+                    }
+                    ImGui.Checkbox("Use Tickets", ref _buttonUseTickets);
+                    if (ImGui.Button("Add")) {
+                        if (!string.IsNullOrEmpty(_buttonTextBuffer) && !string.IsNullOrEmpty(_buttonAetheryteBuffer)) {
+                            cfg_teleportButtons.Add(new TeleportButton(_buttonTextBuffer, _buttonAetheryteBuffer, _buttonUseTickets));
+                            SaveSettings();
+                        }
+                        ImGui.CloseCurrentPopup();
+                        _buttonTextBuffer = string.Empty;
+                        _buttonAetheryteBuffer = string.Empty;
+                    }
+                    ImGui.SameLine();
+                    if (ImGui.Button("Cancel")) {
+                        ImGui.CloseCurrentPopup();
+                        _buttonTextBuffer = string.Empty;
+                        _buttonAetheryteBuffer = string.Empty;
+                    }
+                    ImGui.EndPopup();
+                }
+
+                var windowVisibleX = ImGui.GetWindowPos().X + ImGui.GetWindowContentRegionMax().X;
+                var lastButtonX = 0f;
+                var style = ImGui.GetStyle();
+                for (var i = 0; i < cfg_teleportButtons.Count; i++) {
+                    var button = cfg_teleportButtons[i];
+                    var buttonSizeX = ImGui.CalcTextSize(button.Text).X + 2 * style.FramePadding.X;
+                    var nextButtonX = lastButtonX + style.ItemSpacing.X + buttonSizeX;
+                    if (nextButtonX < windowVisibleX)
+                        ImGui.SameLine(0, i == 0 ? 0 : style.ItemSpacing.X);
+                    if (button.Draw() && !string.IsNullOrEmpty(button.Aetheryte)) {
+                        var cmd = button.UseTickets ? "/tpt" : "/tp";
+                        _plugin.CommandHandler(cmd, button.Aetheryte);
+                    }
+                    lastButtonX = ImGui.GetItemRectMax().X;
+                    
+                    if (ImGui.BeginPopup($"##editButton{i}")) {
+                        ImGui.TextUnformatted("Edit Button");
+                        ImGui.TextUnformatted("Name:");
+                        ImGui.SameLine();
+                        ImGui.SetNextItemWidth(200);
+                        if(ImGui.InputText($"##hideBtnEditText{i}", ref button.Text, ButtonTextBufferLength))
+                            SaveSettings();
+                        ImGui.TextUnformatted("Aetheryte:");
+                        ImGui.SameLine();
+                        ImGui.SetNextItemWidth(180);
+                        if(ImGui.InputText($"##hideBtnEditAetheryte{i}", ref button.Aetheryte, ButtonTextBufferLength))
+                            SaveSettings();
+                        ImGui.SameLine();
+                        UpdateAetheryteList();
+                        if (ImGui.BeginCombo($"##hideEditSelectAetheryte{i}", "", ImGuiComboFlags.NoPreview)) {
+                            for (var o = 0; o < cfg_aetheryteList.Length; o++) {
+                                if (ImGui.Selectable(cfg_aetheryteList[o])) {
+                                    button.Aetheryte = cfg_aetheryteList[o];
+                                    SaveSettings();
+                                }
+                            }
+                            ImGui.EndCombo();
+                        }
+                        if(ImGui.Checkbox("Use Tickets", ref button.UseTickets))
+                            SaveSettings();
+                        if (ImGui.Button("Close"))
+                            ImGui.CloseCurrentPopup();
+                        ImGui.SameLine(ImGui.GetWindowContentRegionWidth() - ImGui.CalcTextSize("Delete").X - 1);
+                        //if (ImGui.Button("Delete")) {
+                        if (ImGui.SmallButton("Delete")) {
+                            cfg_teleportButtons.Remove(button);
+                            SaveSettings();
+                        }
+                        ImGui.EndPopup();
+                    }
+                    ImGui.OpenPopupOnItemClick($"##editButton{i}", 1);
+                }
+
+                var buttSizeX = ImGui.CalcTextSize("+").X + 2 * style.FramePadding.X;
+                var nextButtX = lastButtonX + style.ItemSpacing.X + buttSizeX;
+                if (nextButtX < windowVisibleX)
+                    ImGui.SameLine(0, cfg_teleportButtons.Count <= 0 ? 0 : style.ItemSpacing.X);
+                if (ImGui.Button("+"))
+                    ImGui.OpenPopup("##addButton");
+                if(ImGui.IsItemHovered())
+                    ImGui.SetTooltip("Add new Button.\nRightclick any Button to change them.");
+
+                ImGui.EndChild();
+            }
+            ImGui.End();
+        }
+
+        #endregion
 
         #region Settings Window
 
@@ -62,8 +191,11 @@ namespace TeleporterPlugin {
         private DateTime cfg_lastAetheryteListUpdate = DateTime.MinValue;
         private readonly string[] cfg_languageList = Enum.GetNames(typeof(TeleporterLanguage));
         private int cfg_selectedLanguage;
+        private bool cfg_useFloatingWindow;
+        private List<TeleportButton> cfg_teleportButtons = new List<TeleportButton>();
 
         public void DrawSettings() {
+            if(!SettingsVisible) return;
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
             ImGui.SetNextWindowSizeConstraints(new Vector2(300, 300), new Vector2(float.MaxValue, float.MaxValue));
             if (!ImGui.Begin($"{_plugin.Name} Config", ref _settingsVisible, ImGuiWindowFlags.NoScrollWithMouse))
@@ -71,18 +203,18 @@ namespace TeleporterPlugin {
             
             if (ImGui.BeginChild("##scrollingregionSettings")) {
                 if (ImGui.CollapsingHeader("General Settings", ImGuiTreeNodeFlags.DefaultOpen))
-                    DrawGeneral();
-
+                    DrawGeneralSettings();
+                
                 ImGui.Spacing();
-                if (ImGui.CollapsingHeader("Alias Settings"))
-                    DrawAlias();
+                if (ImGui.CollapsingHeader("Alias Settings", ImGuiTreeNodeFlags.DefaultOpen))
+                    DrawAliasSettings();
 
                 ImGui.EndChild();
             }
             ImGui.End();
         }
 
-        private void DrawAlias() {
+        private void DrawAliasSettings() {
             var newAliasAdded = false;
             if (ImGui.Button("New Alias")) {
                 cfg_aliasList.Insert(0, TeleportAlias.Empty);
@@ -167,7 +299,7 @@ namespace TeleporterPlugin {
             ImGui.Columns(1);
         }
 
-        private void DrawGeneral() {
+        private void DrawGeneralSettings() {
             if(ImGui.Checkbox("Allow partial Name matching", ref cfg_allowPartialMatch)) SaveSettings();
             if (cfg_showTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Matches the first Aetheryte found that starts with ...\n" +
@@ -177,7 +309,8 @@ namespace TeleporterPlugin {
             ImGui.TextUnformatted("Tooltips");
             ImGui.AlignTextToFramePadding();
             ImGui.SameLine();
-            ImGui.Checkbox("##hidelabelTooltips", ref cfg_showTooltips);
+            if(ImGui.Checkbox("##hidelabelTooltips", ref cfg_showTooltips))
+                SaveSettings();
 
             if(ImGui.Checkbox("Skip Ticket Popup", ref cfg_skipTicketPopup)) SaveSettings();
             if (cfg_showTooltips && ImGui.IsItemHovered())
@@ -205,8 +338,18 @@ namespace TeleporterPlugin {
             ImGui.SetNextItemWidth(200);
             if (ImGui.Combo("##hidelabelLangSetting", ref cfg_selectedLanguage, cfg_languageList, cfg_languageList.Length))
                 SaveSettings();
-        }
 
+            if (ImGui.Checkbox("Show Quick Teleport Window", ref cfg_useFloatingWindow)) {
+                FloatingButtonsVisible = cfg_useFloatingWindow;
+                SaveSettings();
+            }
+
+            if (cfg_showTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip("Show a Window with customizable Buttons to quickly Teleport around.\n" +
+                                 "Rightclick on the Window or clicking the + Button will let you add a new Button\n" +
+                                 "Rightlick on any Button will let you Edit or Delete the Button");
+        }
+        
         private void UpdateAetheryteList() {
             if(DateTime.UtcNow.Subtract(cfg_lastAetheryteListUpdate).TotalMilliseconds < 1000)
                 return;
@@ -225,6 +368,7 @@ namespace TeleporterPlugin {
         private int dbg_selected;
 
         public void DrawDebug() {
+            if(!DebugVisible) return;
             var windowSize = new Vector2(350, 315);
             ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
@@ -289,6 +433,7 @@ namespace TeleporterPlugin {
 
         public void Dispose() {
             _plugin.Interface.UiBuilder.OnBuildUi -= Draw;
+            _plugin.Interface.UiBuilder.OnOpenConfigUi = null;
         }
     }
 }

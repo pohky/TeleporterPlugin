@@ -12,9 +12,12 @@ namespace TeleporterPlugin {
         public TeleporterLanguage TeleporterLanguage { get; set; } = TeleporterLanguage.Client;
         public bool SkipTicketPopup { get; set; }
         public bool UseGilThreshold { get; set; }
-        public bool AllowPartialMatch { get; set; }
+        public bool AllowPartialMatch { get; set; } = true;
+        public bool ShowTooltips { get; set; } = true;
+        public bool UseFloatingWindow { get; set; }
         public int GilThreshold { get; set; } = 999;
         public List<TeleportAlias> AliasList { get; set; } = new List<TeleportAlias>();
+        public List<TeleportButton> TeleportButtons { get; set; } = new List<TeleportButton>();
 
         #region Init and Save
 

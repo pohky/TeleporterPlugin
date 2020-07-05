@@ -62,11 +62,11 @@ namespace TeleporterPlugin.Managers {
                 var aetherytes = plugin.Data.GetExcelSheet<Aetheryte>(language);
                 var placeNames = plugin.Data.GetExcelSheet<PlaceName>(language);
                 var nameList = new Dictionary<uint, string>();
-                foreach (var data in aetherytes.GetRows()) {
+                foreach (var data in aetherytes) {
                     var id = data.RowId;
-                    var place = data.PlaceName?.Row;
-                    if (id <= 0 || !place.HasValue || place.Value == 0) continue;
-                    var name = placeNames.GetRow(place.Value).Name;
+                    var place = data.PlaceName.Row;
+                    if (id <= 0 || place == 0) continue;
+                    var name = placeNames.GetRow(place).Name;
                     if (string.IsNullOrEmpty(name)) continue;
                     if (language == ClientLanguage.German)
                         name = name.Replace("", "");
