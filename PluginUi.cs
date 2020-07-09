@@ -67,7 +67,7 @@ namespace TeleporterPlugin {
         private void DrawFloatingWindow() {
             if (!cfg_useFloatingWindow || !FloatingButtonsVisible) return;
             ImGui.SetNextWindowSizeConstraints(new Vector2(150, 65), new Vector2(float.MaxValue, float.MaxValue));
-            if (!ImGui.Begin("Quick Teleport", ref FloatingButtonsVisible, ImGuiWindowFlags.NoScrollWithMouse)) return;
+            if (!ImGui.Begin("AetherGate", ref FloatingButtonsVisible, ImGuiWindowFlags.NoScrollWithMouse)) return;
 
             if (ImGui.BeginChild("##floatyButtons")) {
                 if (ImGui.BeginPopupContextWindow("##addButton", 1, false)) {
@@ -339,15 +339,15 @@ namespace TeleporterPlugin {
             if (ImGui.Combo("##hidelabelLangSetting", ref cfg_selectedLanguage, cfg_languageList, cfg_languageList.Length))
                 SaveSettings();
 
-            if (ImGui.Checkbox("Show Quick Teleport Window", ref cfg_useFloatingWindow)) {
+            if (ImGui.Checkbox("Enable AetherGate", ref cfg_useFloatingWindow)) {
                 FloatingButtonsVisible = cfg_useFloatingWindow;
                 SaveSettings();
             }
 
             if (cfg_showTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Show a Window with customizable Buttons to quickly Teleport around.\n" +
-                                 "Rightclick on the Window or clicking the + Button will let you add a new Button\n" +
-                                 "Rightlick on any Button will let you Edit or Delete the Button");
+                                 "Rightclick on the Window or clicking the + Button to add a new Button\n" +
+                                 "Rightlick on any Button to Edit or Delete it");
         }
         
         private void UpdateAetheryteList() {
