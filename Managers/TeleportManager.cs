@@ -73,7 +73,7 @@ namespace TeleporterPlugin.Managers {
         public TeleportLocation GetLocationByName(string aetheryteName, bool matchPartial = true) {
             var location = GetAetheryteList().FirstOrDefault(o =>
                 o.Name.Equals(aetheryteName, StringComparison.OrdinalIgnoreCase) ||
-                matchPartial && o.Name.ToUpper().StartsWith(aetheryteName.ToUpper()));
+                matchPartial && o.Name.ToUpper().Contains(aetheryteName.ToUpper()));
             return location;
         }
 

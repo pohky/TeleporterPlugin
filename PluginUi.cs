@@ -302,8 +302,8 @@ namespace TeleporterPlugin {
         private void DrawGeneralSettings() {
             if(ImGui.Checkbox("Allow partial Name matching", ref cfg_allowPartialMatch)) SaveSettings();
             if (cfg_showTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Matches the first Aetheryte found that starts with ...\n" +
-                                 "e.g.: 'kug' matches 'Kugane' or 'new' matches 'New Gridania'");
+                ImGui.SetTooltip("Matches the first Aetheryte found that contains ...\n" +
+                                 "e.g.: 'kug' matches 'Kugane' or 'gridania' matches 'New Gridania'");
 
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
             ImGui.TextUnformatted("Tooltips");
