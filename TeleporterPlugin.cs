@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Dalamud;
+using Dalamud.Game.ClientState.Actors.Types;
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
 using TeleporterPlugin.Managers;
@@ -14,7 +14,9 @@ namespace TeleporterPlugin {
         public DalamudPluginInterface Interface { get; private set; }
         public Configuration Config { get; private set; }
         public TeleportManager Manager { get; private set; }
-
+        public PlayerCharacter LocalPlayer => Interface.ClientState.LocalPlayer;
+        public bool IsLoggedIn => LocalPlayer != null;
+        public bool IsInHomeWorld => LocalPlayer.CurrentWorld == LocalPlayer.HomeWorld;
         public ClientLanguage Language {
             get {
                 if (Config.TeleporterLanguage == TeleporterLanguage.Client)
@@ -29,8 +31,6 @@ namespace TeleporterPlugin {
             Config.Initialize(pluginInterface);
             AetheryteDataManager.Init(pluginInterface);
             Manager = new TeleportManager(this);
-            Manager.LogEvent += Log;
-            Manager.LogErrorEvent += LogError;
             Interface.CommandManager.AddHandler("/tp", new CommandInfo(CommandHandler) {
                 HelpMessage = "/tp <name> - Teleport to <name>"
             });
@@ -39,63 +39,44 @@ namespace TeleporterPlugin {
             });
             Gui = new PluginUi(this);
         }
-
+        
         public void Log(string message) {
-            PluginLog.Log(message);
-            Interface.Framework.Gui.Chat.Print($"[{Name}] {message}");
+            Interface.Framework.Gui.Chat.Print($"[{Name}] {message}\0");
         }
 
         public void LogError(string message) {
-            PluginLog.LogError(message);
-            Interface.Framework.Gui.Chat.PrintError($"[{Name}] {message}");
+            Interface.Framework.Gui.Chat.PrintError($"[{Name}] {message}\0");
         }
 
         public void CommandHandler(string command, string arguments) {
-            var arg = arguments.Trim().Replace("\"", "");
-            if (string.IsNullOrEmpty(arg) || arg.Equals("help", StringComparison.OrdinalIgnoreCase)) {
-                var helpText =
-                    $"{Name} Help:\n" +
-                    $"{command} help - Show this Message\n" +
-#if DEBUG
-                    $"{command} debug - Show Debug Window\n" +
-#endif
-                    $"{command} config - Show Settings Window\n" +
-                    $"{command} quick - Show Quick Teleport Window\n";
-                if(command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
-                    helpText += $"{command} <name> - Teleport to <name> using Aetheryte Tickets if possible (e.g. /tpt New Gridania)";
-                else helpText += $"{command} <name> - Teleport to <name> (e.g. /tp New Gridania)";
-                Interface.Framework.Gui.Chat.Print(helpText);
+            var args = arguments.Trim().Replace("\"", string.Empty);
+            if (string.IsNullOrEmpty(args) || args.Equals("help", StringComparison.OrdinalIgnoreCase)) {
+                PrintHelpMessage(command);
                 return;
             }
 
-            if (arg.Equals("quick", StringComparison.OrdinalIgnoreCase)) {
-                Config.UseFloatingWindow = true;
-                Gui.FloatingButtonsVisible = true;
+            if (args.Equals("quick", StringComparison.OrdinalIgnoreCase)) {
+                Gui.AetherGateWindow.Visible = !Gui.AetherGateWindow.Visible;
                 return;
             }
 
-            if (arg.Equals("config", StringComparison.OrdinalIgnoreCase)) {
-                Gui.SettingsVisible = !Gui.SettingsVisible;
+            if (args.Equals("config", StringComparison.OrdinalIgnoreCase)) {
+                Gui.ConfigWindow.Visible = !Gui.ConfigWindow.Visible;
                 return;
             }
 
-            if (arg.Equals("debug", StringComparison.OrdinalIgnoreCase)) {
-                Gui.DebugVisible = !Gui.DebugVisible;
+            if (args.Equals("debug", StringComparison.OrdinalIgnoreCase)) {
+                Gui.DebugWindow.Visible = !Gui.DebugWindow.Visible;
                 return;
             }
-            if(command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
-                HandleTeleportArguments(SplitArguments(arg), TeleportType.Ticket);
-            else HandleTeleportArguments(SplitArguments(arg), TeleportType.Direct);
+
+            HandleTeleportCommand(command, args);
         }
         
-        private void HandleTeleportArguments(List<string> args, TeleportType tpType) {
-            string locationString;
+        private void HandleTeleportCommand(string command, string args) {
+            var locationString = args;
+            var type = command.Equals("/tpt", StringComparison.OrdinalIgnoreCase) ? TeleportType.Ticket : TeleportType.Direct;
 
-            if (!TryGetTeleportType(args, out var type)) {
-                type = tpType;
-                locationString = string.Join(" ", args);
-            } else locationString = string.Join(" ", args.Take(args.Count - 1));
-            
             if (TryGetAlias(locationString, out var alias))
                 locationString = alias.Aetheryte;
 
@@ -125,23 +106,26 @@ namespace TeleporterPlugin {
             return alias != null;
         }
 
-        private static bool TryGetTeleportType(IEnumerable<string> args, out TeleportType type) {
-            var last = args.LastOrDefault() ?? string.Empty;
-            return Enum.TryParse(last, true, out type);
-        }
-        
-        private static List<string> SplitArguments(string args) {
-            if (string.IsNullOrEmpty(args) || string.IsNullOrWhiteSpace(args))
-                return new List<string>();
-            return new List<string>(args.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries));
+        private void PrintHelpMessage(string command) {
+            var helpText =
+                $"{Name} Help:\n" +
+                $"{command} help - Show this Message\n" +
+#if DEBUG
+                $"{command} debug - Show Debug Window\n" +
+#endif
+                $"{command} config - Show Settings Window\n" +
+                $"{command} quick - Show Quick Teleport Window\n";
+            if (command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
+                helpText += $"{command} <name> - Teleport to <name> using Aetheryte Tickets if possible (e.g. /tpt New Gridania)";
+            else helpText += $"{command} <name> - Teleport to <name> (e.g. /tp New Gridania)";
+            Interface.Framework.Gui.Chat.Print($"{helpText}\0");
         }
 
         public void Dispose() {
-            Manager.LogEvent -= Log;
-            Manager.LogErrorEvent -= LogError;
             Interface.CommandManager.RemoveHandler("/tp");
             Interface.CommandManager.RemoveHandler("/tpt");
             Gui?.Dispose();
+            Interface?.Dispose();
         }
     }
 }

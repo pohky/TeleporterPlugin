@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Dalamud;
 using Dalamud.Plugin;
 using Lumina.Excel.GeneratedSheets;
@@ -23,7 +24,7 @@ namespace TeleporterPlugin.Managers {
             {ClientLanguage.Japanese, "ハウス（シェア：<number>）"}
         };
 
-        private static readonly uint[] _privateHouseIds = {59, 60, 61, 97}; //limsa, gridania, uldah, shiro
+        private static readonly uint[] _privateHouseIds = {59, 60, 61, 97}; //limsa, gridania, uldah, kugane
 
         internal static string GetAetheryteName(uint id, byte subIndex, ClientLanguage language) {
             if (!AetheryteNames.TryGetValue(language, out var list))
@@ -34,49 +35,37 @@ namespace TeleporterPlugin.Managers {
                 return name;
 
             switch (subIndex) {
-                case 0: break; // use default name
+                case 0: //use default name
+                    return name;
                 case 128:
-                    name = _apartmentNames[language];
-                    break;
+                    return _apartmentNames[language];
                 case var n when n >= 1 && n <= 127:
-                    name = _sharedHouseNames[language].Replace("<number>", $"{subIndex}");
-                    break;
+                    return _sharedHouseNames[language].Replace("<number>", $"{subIndex}");
                 default:
-                    name = $"Unknown Estate ({id}, {subIndex})";
-                    break;
+                    return $"Unknown Estate ({id}, {subIndex})";
             }
-            return name;
         }
-
-        #region Init
         
         public static void Init(DalamudPluginInterface plugin) {
-            InitNames(plugin);
-        }
-
-        private static void InitNames(DalamudPluginInterface plugin) {
             AetheryteNames = new Dictionary<ClientLanguage, Dictionary<uint, string>>();
             var languageCount = Enum.GetNames(typeof(ClientLanguage)).Length;
             for (var i = 0; i < languageCount; i++) {
                 var language = (ClientLanguage)i;
                 var aetherytes = plugin.Data.GetExcelSheet<Aetheryte>(language);
-                var placeNames = plugin.Data.GetExcelSheet<PlaceName>(language);
                 var nameList = new Dictionary<uint, string>();
                 foreach (var data in aetherytes) {
                     var id = data.RowId;
-                    var place = data.PlaceName.Row;
-                    if (id <= 0 || place == 0) continue;
-                    var name = placeNames.GetRow(place).Name;
+                    if (id <= 0) continue;
+                    var name = data.PlaceName.Value.Name;
                     if (string.IsNullOrEmpty(name)) continue;
                     if (language == ClientLanguage.German)
-                        name = name.Replace("", "");
+                        name = Regex.Replace(name, "[^\u0020-\u00FF]+", string.Empty, RegexOptions.Compiled);
                     if (!nameList.ContainsKey(id))
                         nameList.Add(id, name);
                 }
+
                 AetheryteNames[language] = nameList;
             }
         }
-
-        #endregion
     }
 }

@@ -24,32 +24,34 @@ namespace TeleporterPlugin.Managers {
         public IntPtr ItemCountStaticArgAddress { get; private set; }
 
         public IEnumerable<TeleportLocation> AetheryteList => GetAetheryteList();
-        public event Action<string> LogEvent;
-        public event Action<string> LogErrorEvent;
-
+        
         #region Teleport
 
         public void Teleport(string aetheryteName, bool matchPartial = true) {
             var location = GetLocationByName(aetheryteName, matchPartial);
             if (location == null) {
-                LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
+                _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");
+                if(!_plugin.IsInHomeWorld)
+                    _plugin.Log("Note: Estate Teleports not available while visiting other Worlds.");
                 return;
             }
-            LogEvent?.Invoke($"Teleporting to '{location.Name}'.");
+            _plugin.Log($"Teleporting to '{location.Name}'.");
             _sendCommand?.Invoke(0xCA, location.AetheryteId, false, location.SubIndex, 0);
         }
 
         public void TeleportTicket(string aetheryteName, bool skipPopup = false, bool matchPartial = true) {
             var location = GetLocationByName(aetheryteName, matchPartial);
             if (location == null) {
-                LogErrorEvent?.Invoke($"No attuned Aetheryte found for '{aetheryteName}'.");
+                _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");
+                if (!_plugin.IsInHomeWorld)
+                    _plugin.Log("Note: Estate Teleports not available while visiting other Worlds.");
                 return;
             }
 
             if (skipPopup) {
                 var tickets = GetAetheryteTicketCount();
                 if (tickets > 0) {
-                    LogEvent?.Invoke($"Teleporting to '{location.Name}'. (Tickets: {tickets})");
+                    _plugin.Log($"Teleporting to '{location.Name}'. (Tickets: {tickets})");
                     _sendCommand?.Invoke(0xCA, location.AetheryteId, true, location.SubIndex, 0);
                     return;
                 }
@@ -58,11 +60,11 @@ namespace TeleporterPlugin.Managers {
                 if (TeleportStatusAddress != IntPtr.Zero)
                     result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.AetheryteId, location.SubIndex);
                 if (result == true) {
-                    LogEvent?.Invoke($"Teleporting to '{location.Name}'.");
+                    _plugin.Log($"Teleporting to '{location.Name}'.");
                     return;
                 }
             }
-            LogEvent?.Invoke($"Teleporting to '{location.Name}'. (Not using Tickets)");
+            _plugin.Log($"Teleporting to '{location.Name}'. (Not using Tickets)");
             _sendCommand?.Invoke(0xCA, location.AetheryteId, false, location.SubIndex, 0);
         }
 
@@ -71,6 +73,7 @@ namespace TeleporterPlugin.Managers {
         #region Helpers
 
         public TeleportLocation GetLocationByName(string aetheryteName, bool matchPartial = true) {
+            if (string.IsNullOrEmpty(aetheryteName)) return null;
             var location = GetAetheryteList().FirstOrDefault(o =>
                 o.Name.Equals(aetheryteName, StringComparison.OrdinalIgnoreCase) ||
                 matchPartial && o.Name.ToUpper().Contains(aetheryteName.ToUpper()));
@@ -78,7 +81,7 @@ namespace TeleporterPlugin.Managers {
         }
 
         private IEnumerable<TeleportLocation> GetAetheryteList() {
-            if (AetheryteListAddress == IntPtr.Zero || _plugin.Interface.ClientState.LocalPlayer == null)
+            if (AetheryteListAddress == IntPtr.Zero || !_plugin.IsLoggedIn)
                 yield break;
             var ptr = _getAvalibleLocationList?.Invoke(AetheryteListAddress, 0) ?? IntPtr.Zero;
             if (ptr == IntPtr.Zero) yield break;

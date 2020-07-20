@@ -4,15 +4,13 @@ using ImGuiNET;
 namespace TeleporterPlugin.Objects {
     [Serializable]
     public class TeleportButton : IEquatable<TeleportButton> {
-        private static int _buttonCounter;
-        [NonSerialized] public readonly int Id;
+        private static readonly Random Rng = new Random();
         public string Text;
         public string Aetheryte;
         public bool UseTickets;
 
         public TeleportButton(string text, string aetheryte, bool useTickets) {
-            Id = _buttonCounter++;
-            Text = text ?? $"Button{Id}";
+            Text = text ?? $"Button{Rng.Next(0, 9999)}";
             Aetheryte = aetheryte ?? string.Empty;
             UseTickets = useTickets;
         }
@@ -23,10 +21,12 @@ namespace TeleporterPlugin.Objects {
             return true;
         }
 
+        #region IEquatable
+
         public bool Equals(TeleportButton other) {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Id == other.Id;
+            return string.Equals(Text, other.Text, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj) {
@@ -34,7 +34,7 @@ namespace TeleporterPlugin.Objects {
         }
 
         public override int GetHashCode() {
-            return Id;
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(Text);
         }
 
         public static bool operator ==(TeleportButton left, TeleportButton right) {
@@ -44,5 +44,7 @@ namespace TeleporterPlugin.Objects {
         public static bool operator !=(TeleportButton left, TeleportButton right) {
             return !Equals(left, right);
         }
+
+        #endregion
     }
 }
