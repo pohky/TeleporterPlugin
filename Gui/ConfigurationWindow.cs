@@ -60,6 +60,18 @@ namespace TeleporterPlugin.Gui {
             ImGui.AlignTextToFramePadding();
             ImGui.SameLine();
             if (ImGui.Checkbox("##hideTooltipsOnOff", ref Config.ShowTooltips)) Config.Save();
+
+            ImGui.TextUnformatted("Language:");
+            if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip("Change the Language used for Aetheryte Names.\n" +
+                                 $"(default) Client = Game Language [{Plugin.Interface.ClientState.ClientLanguage}]");
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(200);
+            if (ImGui.Combo("##hideLangSetting", ref _selectedLanguage, _languageList, _languageList.Length)) {
+                Config.TeleporterLanguage = (TeleporterLanguage)_selectedLanguage;
+                Config.Save();
+            }
+
             if (ImGui.Checkbox("Skip Ticket Popup", ref Config.SkipTicketPopup)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Removes the 'Use an aetheryte ticket to teleport...' popup when using Teleporter commands");
@@ -78,23 +90,14 @@ namespace TeleporterPlugin.Gui {
                 Config.Save();
             }
 
-            ImGui.TextUnformatted("Language:");
-            if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Change the Language used for Aetheryte Names.\n" +
-                                 $"(default) Client = Game Language [{Plugin.Interface.ClientState.ClientLanguage}]");
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(200);
-            if (ImGui.Combo("##hideLangSetting", ref _selectedLanguage, _languageList, _languageList.Length)) {
-                Config.TeleporterLanguage = (TeleporterLanguage)_selectedLanguage;
-                Config.Save();
-            }
-
             if (ImGui.Checkbox("Enable AetherGate", ref Config.UseFloatingWindow))
                 Config.Save();
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Show a Window with customizable Buttons to quickly Teleport around.\n" +
                                  "Rightclick on the Window or clicking the + Button to add a new Button\n" +
                                  "Rightlick on any Button to Edit or Delete it");
+            if(ImGui.Checkbox("Show Teleport Messages in Chat", ref Config.PrintMessage))
+                Config.Save();
         }
 
         private void DrawAliasSettings() {

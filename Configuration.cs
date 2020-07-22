@@ -19,6 +19,9 @@ namespace TeleporterPlugin {
         public List<TeleportAlias> AliasList = new List<TeleportAlias>();
         public List<TeleportButton> TeleportButtons = new List<TeleportButton>();
 
+        public bool PrintMessage = true;
+        public bool PrintError = true;
+
         #region Init and Save
         
         [NonSerialized] private DalamudPluginInterface _pluginInterface;

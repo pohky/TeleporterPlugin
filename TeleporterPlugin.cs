@@ -17,6 +17,7 @@ namespace TeleporterPlugin {
         public PlayerCharacter LocalPlayer => Interface.ClientState.LocalPlayer;
         public bool IsLoggedIn => LocalPlayer != null;
         public bool IsInHomeWorld => LocalPlayer?.CurrentWorld == LocalPlayer?.HomeWorld;
+
         public ClientLanguage Language {
             get {
                 if (Config.TeleporterLanguage == TeleporterLanguage.Client)
@@ -39,13 +40,19 @@ namespace TeleporterPlugin {
             });
             Gui = new PluginUi(this);
         }
-        
+
         public void Log(string message) {
-            Interface.Framework.Gui.Chat.Print($"[{Name}] {message}\0");
+            if (!Config.PrintMessage) return;
+            var msg = $"[{Name}] {message}";
+            PluginLog.Log(msg);
+            Interface.Framework.Gui.Chat.Print(msg);
         }
 
         public void LogError(string message) {
-            Interface.Framework.Gui.Chat.PrintError($"[{Name}] {message}\0");
+            if (!Config.PrintMessage) return;
+            var msg = $"[{Name}] {message}";
+            PluginLog.LogError(msg);
+            Interface.Framework.Gui.Chat.PrintError(msg);
         }
 
         public void CommandHandler(string command, string arguments) {
@@ -72,7 +79,7 @@ namespace TeleporterPlugin {
 
             HandleTeleportCommand(command, args);
         }
-        
+
         private void HandleTeleportCommand(string command, string args) {
             var locationString = args;
             var type = command.Equals("/tpt", StringComparison.OrdinalIgnoreCase) ? TeleportType.Ticket : TeleportType.Direct;
@@ -82,10 +89,9 @@ namespace TeleporterPlugin {
 
             if (Config.UseGilThreshold) {
                 var location = Manager.GetLocationByName(locationString);
-                if (location != null) {
+                if (location != null)
                     if (location.GilCost > Config.GilThreshold)
                         type = TeleportType.Ticket;
-                }
             }
 
             switch (type) {
