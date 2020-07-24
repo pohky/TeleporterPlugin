@@ -21,6 +21,7 @@ namespace TeleporterPlugin.Gui {
         public AetherGateWindow(TeleporterPlugin plugin) : base(plugin) { }
 
         protected override void DrawUi() {
+            if (!Plugin.IsLoggedIn) return;
             ImGui.SetNextWindowSizeConstraints(new Vector2(150, 65), new Vector2(float.MaxValue, float.MaxValue));
             if (!ImGui.Begin("AetherGate", ref Config.UseFloatingWindow, ImGuiWindowFlags.NoScrollWithMouse)) return;
 
