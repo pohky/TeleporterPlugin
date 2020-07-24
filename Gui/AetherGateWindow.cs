@@ -23,8 +23,11 @@ namespace TeleporterPlugin.Gui {
         protected override void DrawUi() {
             if (!Plugin.IsLoggedIn) return;
             ImGui.SetNextWindowSizeConstraints(new Vector2(150, 65), new Vector2(float.MaxValue, float.MaxValue));
-            if (!ImGui.Begin("AetherGate", ref Config.UseFloatingWindow, ImGuiWindowFlags.NoScrollWithMouse)) return;
-
+            if (!ImGui.Begin("AetherGate", ref Config.UseFloatingWindow, ImGuiWindowFlags.NoScrollWithMouse)) {
+                ImGui.End();
+                return;
+            }
+            
             if (ImGui.BeginChild("##floatyButtons")) {
                 if (ImGui.BeginPopupContextWindow("##addButton", 1, false)) {
                     ImGui.TextUnformatted("Add New Button");
@@ -134,7 +137,6 @@ namespace TeleporterPlugin.Gui {
 
                 ImGui.EndChild();
             }
-
             ImGui.End();
         }
 

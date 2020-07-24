@@ -25,8 +25,10 @@ namespace TeleporterPlugin.Gui {
         protected override void DrawUi() {
             ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
             ImGui.SetNextWindowSizeConstraints(new Vector2(300, 300), new Vector2(float.MaxValue, float.MaxValue));
-            if (!ImGui.Begin($"{Plugin.Name} Config", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse))
+            if (!ImGui.Begin($"{Plugin.Name} Config", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse)) {
+                ImGui.End();
                 return;
+            }
 
             if (ImGui.BeginChild("##SettingsRegion")) {
                 if (ImGui.CollapsingHeader("General Settings", ImGuiTreeNodeFlags.DefaultOpen))
