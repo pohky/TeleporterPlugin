@@ -7,11 +7,13 @@ namespace TeleporterPlugin {
         public ConfigurationWindow ConfigWindow { get; }
         public AetherGateWindow AetherGateWindow { get; }
         public DebugWindow DebugWindow { get; }
+        public LinksWindow LinksWindow { get; }
 
         public PluginUi(TeleporterPlugin plugin) {
             ConfigWindow = new ConfigurationWindow(plugin);
             AetherGateWindow = new AetherGateWindow(plugin);
             DebugWindow = new DebugWindow(plugin);
+            LinksWindow = new LinksWindow(plugin);
 
             _plugin = plugin;
             _plugin.Interface.UiBuilder.OnBuildUi += Draw;
@@ -22,6 +24,7 @@ namespace TeleporterPlugin {
             ConfigWindow.Draw();
             AetherGateWindow.Draw();
             DebugWindow.Draw();
+            LinksWindow.Draw();
         }
 
         public void Dispose() {

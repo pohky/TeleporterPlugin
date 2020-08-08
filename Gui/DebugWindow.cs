@@ -51,14 +51,10 @@ namespace TeleporterPlugin.Gui {
                 ImGui.SetColumnWidth(2, 80);
                 ImGui.SetColumnWidth(3, 80);
                 ImGui.Separator();
-                ImGui.Text("Name");
-                ImGui.NextColumn();
-                ImGui.Text("Id");
-                ImGui.NextColumn();
-                ImGui.Text("SubIndex");
-                ImGui.NextColumn();
-                ImGui.Text("ZoneId");
-                ImGui.NextColumn();
+                ImGui.Text("Name"); ImGui.NextColumn();
+                ImGui.Text("Id"); ImGui.NextColumn();
+                ImGui.Text("SubIndex"); ImGui.NextColumn();
+                ImGui.Text("ZoneId"); ImGui.NextColumn();
 
                 ImGui.Separator();
                 for (var i = 0; i < dbg_locations.Count; i++) {

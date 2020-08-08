@@ -39,8 +39,9 @@ namespace TeleporterPlugin {
                 HelpMessage = "/tpt <name> - Teleport to <name> using Aetheryte Tickets if possible"
             });
             Gui = new PluginUi(this);
+            Interface.Framework.Gui.Chat.OnChatMessage += Gui.LinksWindow.ChatOnChatMessage;
         }
-
+        
         public void Log(string message) {
             if (!Config.PrintMessage) return;
             var msg = $"[{Name}] {message}";
@@ -64,6 +65,11 @@ namespace TeleporterPlugin {
 
             if (args.Equals("quick", StringComparison.OrdinalIgnoreCase)) {
                 Gui.AetherGateWindow.Visible = !Gui.AetherGateWindow.Visible;
+                return;
+            }
+
+            if (args.Equals("links", StringComparison.OrdinalIgnoreCase)) {
+                Gui.LinksWindow.Visible = !Gui.LinksWindow.Visible;
                 return;
             }
 
@@ -120,6 +126,7 @@ namespace TeleporterPlugin {
                 $"{command} debug - Show Debug Window\n" +
 #endif
                 $"{command} config - Show Settings Window\n" +
+                $"{command} links - Show Maplink Tracker\n" +
                 $"{command} quick - Show Quick Teleport Window\n";
             if (command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
                 helpText += $"{command} <name> - Teleport to <name> using Aetheryte Tickets if possible (e.g. /tpt New Gridania)";
@@ -128,9 +135,12 @@ namespace TeleporterPlugin {
         }
 
         public void Dispose() {
+            if(Gui != null)
+                Interface.Framework.Gui.Chat.OnChatMessage -= Gui.LinksWindow.ChatOnChatMessage;
             Interface.CommandManager.RemoveHandler("/tp");
             Interface.CommandManager.RemoveHandler("/tpt");
             Gui?.Dispose();
+            Manager?.Dispose();
             Interface?.Dispose();
         }
     }
