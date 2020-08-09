@@ -51,7 +51,7 @@ namespace TeleporterPlugin.Objects {
         }
 
         public override string ToString() {
-            return $"{PlaceName} ({Math.Round(Location.X, 2):N1}, {Math.Round(Location.Y, 2):N1})";
+            return $"{PlaceName} ({Math.Round(Location.X, 2):N1} {Math.Round(Location.Y, 2):N1})";
         }
 
         public bool Equals(MapLink other) {

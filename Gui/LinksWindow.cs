@@ -83,7 +83,7 @@ namespace TeleporterPlugin.Gui {
             ImGui.Text("Chat"); ImGui.NextColumn();
             ImGui.Separator();
 
-            var mapLinks = MapLinks.ToArray();
+            var mapLinks = MapLinks.Reverse().ToArray();
             for (var i = 0; i < mapLinks.Length; i++) {
                 var link = mapLinks[i];
                 if (ImGui.Selectable($"{link.SenderName}", _selectedLink == i, ImGuiSelectableFlags.SpanAllColumns))
@@ -107,7 +107,7 @@ namespace TeleporterPlugin.Gui {
                 }
 
                 ImGui.NextColumn();
-                ImGui.Text($"X: {link.Location.X:N1} Y: {link.Location.Y:N1}");
+                ImGui.Text(link.ToString());
                 ImGui.NextColumn();
                 ImGui.Text($"{link.GetTypeString()}");
                 ImGui.NextColumn();
