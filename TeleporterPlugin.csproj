@@ -32,23 +32,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dalamud">
-      <HintPath>..\..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="EasyHook">
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\EasyHook.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ImGui.NET">
-      <HintPath>..\..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\ImGui.NET.dll</HintPath>
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\ImGui.NET.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ImGuiScene">
-      <HintPath>..\..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\ImGuiScene.dll</HintPath>
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\ImGuiScene.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Lumina">
-      <HintPath>..\..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Lumina.Generated">
-      <HintPath>..\..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Lumina.Generated.dll</HintPath>
+      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Lumina.Generated.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -65,8 +69,11 @@
     <Compile Include="Gui\ConfigurationWindow.cs" />
     <Compile Include="Gui\DebugWindow.cs" />
     <Compile Include="Gui\AetherGateWindow.cs" />
+    <Compile Include="Gui\LinksWindow.cs" />
     <Compile Include="Gui\Window.cs" />
     <Compile Include="Managers\AetheryteDataManager.cs" />
+    <Compile Include="Objects\AetheryteLocation.cs" />
+    <Compile Include="Objects\MapLink.cs" />
     <Compile Include="Objects\TeleportButton.cs" />
     <Compile Include="Objects\TeleportAlias.cs" />
     <Compile Include="Objects\TeleporterLanguage.cs" />

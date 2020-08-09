@@ -4,8 +4,7 @@ using System.Numerics;
 using ImGuiNET;
 using TeleporterPlugin.Objects;
 
-//TODO FIX THIS
-//BUG Fix Estate TP if not on Home World
+//TODO BUG Fix Estate TP if not on Home World
 
 namespace TeleporterPlugin.Gui {
     public class ConfigurationWindow : Window<TeleporterPlugin> {
@@ -98,7 +97,7 @@ namespace TeleporterPlugin.Gui {
                 ImGui.SetTooltip("Show a Window with customizable Buttons to quickly Teleport around.\n" +
                                  "Rightclick on the Window or clicking the + Button to add a new Button\n" +
                                  "Rightlick on any Button to Edit or Delete it");
-            if(ImGui.Checkbox("Show Teleport Messages in Chat", ref Config.PrintMessage))
+            if(ImGui.Checkbox("Show Teleporter Messages in Chat", ref Config.PrintMessage))
                 Config.Save();
         }
 
