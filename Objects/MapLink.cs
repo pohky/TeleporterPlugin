@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
@@ -10,6 +9,7 @@ using TeleporterPlugin.Managers;
 namespace TeleporterPlugin.Objects {
     public class MapLink : IEquatable<MapLink> {
         private readonly TeleporterPlugin _plugin;
+        private string _typeString;
         public Vector2 Location { get; }
         public string PlaceName { get; }
         public uint TerritoryId { get; }
@@ -39,7 +39,7 @@ namespace TeleporterPlugin.Objects {
         }
 
         public string GetTypeString() {
-            return GetEnumDescription(ChatType);
+            return _typeString ?? (_typeString = GetEnumDescription(ChatType));
         }
 
         public static string GetEnumDescription(Enum value) {

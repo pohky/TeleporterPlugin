@@ -100,7 +100,6 @@ namespace TeleporterPlugin.Gui {
                             Type = XivChatType.Echo,
                             SenderId = 0
                         });
-                        //Plugin.Interface.Framework.Gui.Chat.UpdateQueue(Plugin.Interface.Framework);
                     } else if (ImGui.IsMouseClicked(1) && IsShiftKeyPressed()) {
                         UndoLinkStack.Push(link);
                         MapLinks.Remove(link);
