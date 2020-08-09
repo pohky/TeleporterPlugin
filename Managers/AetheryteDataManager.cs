@@ -56,65 +56,43 @@ namespace TeleporterPlugin.Managers {
 
         public static void Init(DalamudPluginInterface plugin) {
             AetheryteNames = new Dictionary<ClientLanguage, Dictionary<uint, string>>();
-            var languageCount = Enum.GetNames(typeof(ClientLanguage)).Length;
-
             AetheryteLocations = new Dictionary<ClientLanguage, List<AetheryteLocation>>();
-            var mapMarkers = plugin.Data.GetExcelSheet<MapMarker>().Where(m => m.DataType == 3).ToList();
 
-            for (var i = 0; i < languageCount; i++) {
-                var language = (ClientLanguage)i;
-                var aetheryteList = plugin.Data.GetExcelSheet<Aetheryte>(language);
-                var nameList = new Dictionary<uint, string>();
+            var aetheryteSheet = plugin.Data.GetExcelSheet<Aetheryte>();
+            var mapSheet = plugin.Data.GetExcelSheet<Map>();
+            var mapMarkerList = plugin.Data.GetExcelSheet<MapMarker>().Where(m => m.DataType == 3).ToList();
+            
+            foreach (ClientLanguage language in Enum.GetValues(typeof(ClientLanguage))) {
+                var placeNameSheet = plugin.Data.GetExcelSheet<PlaceName>(language);
+                var nameDictionary = new Dictionary<uint, string>();
                 var locationList = new List<AetheryteLocation>();
-                foreach (var aetheryte in aetheryteList) {
+
+                foreach (var aetheryte in aetheryteSheet) {
                     var id = aetheryte.RowId;
                     if (id <= 0) continue;
-                    var name = aetheryte.PlaceName.Value.Name;
+                    var name = placeNameSheet.GetRow(aetheryte.PlaceName.Row).Name;
                     if (string.IsNullOrEmpty(name)) continue;
                     if (language == ClientLanguage.German)
                         name = Regex.Replace(name, "[^\u0020-\u00FF]+", string.Empty, RegexOptions.Compiled);
-                    if (!nameList.ContainsKey(id))
-                        nameList.Add(id, name);
+                    if (!nameDictionary.ContainsKey(id))
+                        nameDictionary.Add(id, name);
 
                     if (!aetheryte.IsAetheryte) continue;
-                    var marker = mapMarkers.FirstOrDefault(m => m.DataKey == aetheryte.RowId);
+                    var marker = mapMarkerList.FirstOrDefault(m => m.DataKey == aetheryte.RowId);
                     if (marker == null) continue;
-                    var scale = aetheryte.Map.Value.SizeFactor;
-                    var objX = MapMarkerToMapPos(marker.X, scale);
-                    var objY = MapMarkerToMapPos(marker.Y, scale);
+                    var scale = mapSheet.GetRow(aetheryte.Map.Row).SizeFactor;
+                    var markerPos = new Vector2(MapMarkerToMapPos(marker.X, scale), MapMarkerToMapPos(marker.Y, scale));
                     locationList.Add(new AetheryteLocation {
                         AetheryteId = aetheryte.RowId,
-                        Location = new Vector2(objX, objY),
-                        TerritoryId = aetheryte.Territory.Value.RowId,
-                        //TerritoryId = 0, 
-                        //Name = aetheryte.PlaceName.Value.Name
+                        Location = markerPos,
+                        TerritoryId = aetheryte.Territory.Row,
                         Name = name
                     });
                 }
 
-                AetheryteNames[language] = nameList;
+                AetheryteNames[language] = nameDictionary;
                 AetheryteLocations[language] = locationList;
             }
-
-            //for (var i = 0; i < languageCount; i++) {
-            //    var language = (ClientLanguage)i;
-            //    var aetheryteList = plugin.Data.GetExcelSheet<Aetheryte>(language);
-            //    var locationList = new List<AetheryteLocation>();
-            //    foreach (var aetheryte in aetheryteList.Where(a => a.IsAetheryte)) {
-            //        var marker = mapMarkers.FirstOrDefault(m => m.DataType == 3 && m.DataKey == aetheryte.RowId);
-            //        if (marker == null) continue;
-            //        var scale = aetheryte.Map.Value.SizeFactor;
-            //        var objX = MapMarkerToMapPos(marker.X, scale);
-            //        var objY = MapMarkerToMapPos(marker.Y, scale);
-            //        locationList.Add(new AetheryteLocation {
-            //            AetheryteId = aetheryte.RowId,
-            //            Location = new Vector2(objX, objY),
-            //            TerritoryId = aetheryte.Territory.Value.RowId,
-            //            Name = aetheryte.PlaceName.Value.Name
-            //        });
-            //    }
-            //    AetheryteLocations.Add(language, locationList);
-            //}
         }
 
         public static int MapPosToRawPos(float pos, float scale) {

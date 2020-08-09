@@ -45,14 +45,13 @@ namespace TeleporterPlugin {
         public void Log(string message) {
             if (!Config.PrintMessage) return;
             var msg = $"[{Name}] {message}";
-            PluginLog.Log(msg);
             Interface.Framework.Gui.Chat.Print(msg);
         }
 
         public void LogError(string message) {
-            if (!Config.PrintMessage) return;
             var msg = $"[{Name}] {message}";
             PluginLog.LogError(msg);
+            if (!Config.PrintMessage) return;
             Interface.Framework.Gui.Chat.PrintError(msg);
         }
 

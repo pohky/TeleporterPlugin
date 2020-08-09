@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
-using Dalamud;
+using System.Reflection;
+using Dalamud.Game.Chat;
+using Dalamud.Game.Chat.SeStringHandling;
 using Dalamud.Game.Chat.SeStringHandling.Payloads;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using TeleporterPlugin.Managers;
 
 namespace TeleporterPlugin.Objects {
@@ -17,17 +17,18 @@ namespace TeleporterPlugin.Objects {
         public AetheryteLocation Aetheryte { get; }
         public string SenderName { get; }
         public string Message { get; }
+        public byte[] Data { get; }
+        public XivChatType ChatType { get; }
 
-        public MapLink(TeleporterPlugin plugin, MapLinkPayload payload, string senderName, string message) {
+        public MapLink(TeleporterPlugin plugin, XivChatType type, MapLinkPayload payload, string senderName, ref SeString message) {
             _plugin = plugin;
+            ChatType = type;
             Location = new Vector2(payload.XCoord, payload.YCoord);
-            var territory = plugin.Interface.Data.GetExcelSheet<TerritoryType>(ClientLanguage.English).GetRow(payload.TerritoryType.RowId);
-            //territory = AetheryteDataManager.Territories[plugin.Language].GetRow(payload.TerritoryType.RowId);
-            plugin.Log($"Lang: {plugin.Language} Name: {territory.PlaceName.Value.Name} Map: {territory.Map.Value.PlaceName.Value.Name}");
-            PlaceName = territory.PlaceName.Value.Name;
+            PlaceName = payload.PlaceName;
             TerritoryId = payload.TerritoryType.RowId;
             SenderName = senderName;
-            Message = message;
+            Message = message.TextValue;
+            Data = message.Encode();
             Aetheryte = GetClosestAetheryte();
         }
 
@@ -35,6 +36,18 @@ namespace TeleporterPlugin.Objects {
             var aetherytes = AetheryteDataManager.GetAetheryteLocationsByTerritory(TerritoryId, _plugin.Language);
             if (aetherytes.Count <= 0) return null;
             return aetherytes.Aggregate((curMin, x) => curMin == null || x.Distance2D(Location) < curMin.Distance2D(Location) ? x : curMin);
+        }
+
+        public string GetTypeString() {
+            return GetEnumDescription(ChatType);
+        }
+
+        public static string GetEnumDescription(Enum value) {
+            var fi = value.GetType().GetField(value.ToString());
+            if (fi.GetCustomAttributes(typeof(XivChatTypeInfoAttribute), false) is XivChatTypeInfoAttribute[] attributes && attributes.Any()) {
+                return attributes.First().FancyName;
+            }
+            return value.ToString();
         }
 
         public override string ToString() {

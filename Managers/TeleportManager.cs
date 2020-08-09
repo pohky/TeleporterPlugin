@@ -8,15 +8,21 @@ using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Managers {
     public class TeleportManager : IDisposable {
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate IntPtr GetAvalibleLocationListDelegate(IntPtr locationsPtr, uint arg2);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void SendCommandDelegate(uint cmd, uint aetheryteId, bool useTicket, uint subIndex, uint arg5);
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate bool TryTeleportWithTicketDelegate(IntPtr tpStatusPtr, uint aetheryteId, byte subIndex);
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate int GetItemCountDelegate(IntPtr arg1, uint itemId, uint arg3, uint arg4, uint arg5, uint arg6);
 
         private GetAvalibleLocationListDelegate _getAvalibleLocationList;
         private SendCommandDelegate _sendCommand;
         private TryTeleportWithTicketDelegate _tryTeleportWithTicket;
         private GetItemCountDelegate _getItemCount;
+
+        private Hook<TryTeleportWithTicketDelegate> _tpTicketHook;
 
         private readonly TeleporterPlugin _plugin;
 
@@ -35,43 +41,46 @@ namespace TeleporterPlugin.Managers {
             }
         }
 
-        private TryTeleportWithTicketDelegate _tryTeleportWithTicketHook;
-        private Hook<TryTeleportWithTicketDelegate> _tpTicketHook;
+        
 
         #region Teleport
 
         private bool TicketTpHook(IntPtr tpStatusPtr, uint aetheryteId, byte subIndex) {
-            if (GetAetheryteTicketCount() <= 0) {
-                _plugin.Log("No Tickets. Using Original TP.");
-                return _tpTicketHook.Original(tpStatusPtr, aetheryteId, subIndex);
-            }
+            try {
+                if (GetAetheryteTicketCount() <= 0)
+                    return _tpTicketHook.Original(tpStatusPtr, aetheryteId, subIndex);
 
-            if (_plugin.Config.UseGilThreshold) {
-                var location = AetheryteList.FirstOrDefault(l => l.AetheryteId == aetheryteId && l.SubIndex == subIndex);
-                if (location != null) {
-                    if (location.GilCost < _plugin.Config.GilThreshold) {
-                        _plugin.Log("Price below threshold. Teleporting without ticket.");
-                        _sendCommand?.Invoke(0xCA, aetheryteId, false, subIndex, 0);
-                        return true;
+                if (_plugin.Config.UseGilThreshold) {
+                    var location = AetheryteList.FirstOrDefault(l => l.AetheryteId == aetheryteId && l.SubIndex == subIndex);
+                    if (location != null) {
+                        if (location.GilCost < _plugin.Config.GilThreshold) {
+                            //_plugin.Log("Price below threshold. Teleporting without ticket.");
+                            _sendCommand?.Invoke(0xCA, aetheryteId, false, subIndex, 0);
+                            return true;
+                        }
                     }
                 }
-            }
-            if (_plugin.Config.SkipTicketPopup) {
-                _plugin.Log("Skipping Ticket Popup.");
-                _sendCommand?.Invoke(0xCA, aetheryteId, true, subIndex, 0);
-                return true;
-            }
 
-            _plugin.Log("Using Original TP.");
-            return _tpTicketHook.Original(tpStatusPtr, aetheryteId, subIndex);
+                if (_plugin.Config.SkipTicketPopup) {
+                    //_plugin.Log("Skipping Ticket Popup.");
+                    _sendCommand?.Invoke(0xCA, aetheryteId, true, subIndex, 0);
+                    return true;
+                }
+
+                //_plugin.Log("Using Original TP.");
+                return _tpTicketHook.Original(tpStatusPtr, aetheryteId, subIndex);
+            } catch {
+                _plugin.LogError("Error in TicketTpHook Call.");
+                return _tpTicketHook.Original(tpStatusPtr, aetheryteId, subIndex);
+            }
         }
-
+        
         public void Teleport(string aetheryteName, bool matchPartial = true) {
             try {
                 var location = GetLocationByName(aetheryteName, matchPartial);
                 if (location == null) {
                     _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");
-                    if (!_plugin.IsInHomeWorld)
+                    if (!_plugin.IsInHomeWorld && aetheryteName.Contains('('))
                         _plugin.Log("Note: Estate Teleports not available while visiting other Worlds.");
                     return;
                 }
@@ -88,7 +97,7 @@ namespace TeleporterPlugin.Managers {
                 var location = GetLocationByName(aetheryteName, matchPartial);
                 if (location == null) {
                     _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");
-                    if (!_plugin.IsInHomeWorld)
+                    if (!_plugin.IsInHomeWorld && aetheryteName.Contains('('))
                         _plugin.Log("Note: Estate Teleports not available while visiting other Worlds.");
                     return;
                 }
@@ -173,8 +182,7 @@ namespace TeleporterPlugin.Managers {
                 InitDelegates(plugin.Interface);
                 InitAddresses(plugin.Interface);
             } catch(Exception ex) {
-                _plugin.LogError("TeleportManager Init Error.");
-                PluginLog.LogError(ex, "Init Error...");
+                _plugin.LogError($"TeleportManager Init Error.\n{ex.Message}");
             }
         }
 
@@ -193,9 +201,7 @@ namespace TeleporterPlugin.Managers {
             var tryTicketTpAddr = scanner.ScanText("48895C24??48897424??574883EC??8079??00410FB6F88BF2");
             if (tryTicketTpAddr != IntPtr.Zero) {
                 _tryTeleportWithTicket = Marshal.GetDelegateForFunctionPointer<TryTeleportWithTicketDelegate>(tryTicketTpAddr);
-
-                _tryTeleportWithTicketHook = TicketTpHook;
-                _tpTicketHook = new Hook<TryTeleportWithTicketDelegate>(tryTicketTpAddr, _tryTeleportWithTicketHook);
+                _tpTicketHook = new Hook<TryTeleportWithTicketDelegate>(tryTicketTpAddr, new TryTeleportWithTicketDelegate(TicketTpHook));
                 _tpTicketHook.Enable();
             } else _plugin.LogError("tryTicketTpAddr is null.");
 

@@ -19,6 +19,9 @@ namespace TeleporterPlugin {
         public List<TeleportAlias> AliasList = new List<TeleportAlias>();
         public List<TeleportButton> TeleportButtons = new List<TeleportButton>();
 
+        public bool LinkTrackerAutoPop = true;
+        public bool LinkTrackerAlwaysActive = false;
+
         public bool PrintMessage = true;
         public bool PrintError = true;
 
