@@ -205,7 +205,7 @@ namespace TeleporterPlugin.Managers {
                 _tpTicketHook.Enable();
             } else _plugin.LogError("tryTicketTpAddr is null.");
 
-            var getItemCountAddr = scanner.ScanText("48895C24??48896C24??48897424??48897C24??4154415641574883EC??33DB8D");
+            var getItemCountAddr = scanner.ScanText("48895C24??48896C24??48897424??48897C24??4154415641574883EC??33??8D");
             if (getItemCountAddr != IntPtr.Zero)
                 _getItemCount = Marshal.GetDelegateForFunctionPointer<GetItemCountDelegate>(getItemCountAddr);
             else _plugin.LogError("getItemCountAddr is null.");
