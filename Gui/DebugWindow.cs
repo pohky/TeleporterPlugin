@@ -37,13 +37,13 @@ namespace TeleporterPlugin.Gui {
 
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport"))
-                    Plugin.Manager.Teleport(dbg_locations[dbg_selected]);
+                    Plugin.Manager.Teleport(dbg_locations[dbg_selected], true);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket)"))
-                    Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], true);
+                    Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], true, true);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket + Popup)"))
-                    Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected]);
+                    Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], false, true);
 
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(4, "##listbox");

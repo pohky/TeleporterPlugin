@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using ImGuiNET;
+using TeleporterPlugin.Managers;
 using TeleporterPlugin.Objects;
 
 //TODO BUG Fix Estate TP if not on Home World
@@ -13,6 +15,7 @@ namespace TeleporterPlugin.Gui {
         private int _selectedLanguage;
         private DateTime _lastAetheryteListUpdate = DateTime.MinValue;
         private string[] _aetheryteList = new string[0];
+        private string[] _mapList = new string[0];
 
         public Configuration Config => Plugin.Config;
 
@@ -44,9 +47,17 @@ namespace TeleporterPlugin.Gui {
         }
 
         private void UpdateAetheryteList() {
-            if (DateTime.UtcNow.Subtract(_lastAetheryteListUpdate).TotalMilliseconds < 1000)
+            if (DateTime.UtcNow.Subtract(_lastAetheryteListUpdate).TotalMilliseconds < 5000)
                 return;
-            _aetheryteList = Plugin.Manager.AetheryteList.Select(a => a.Name).ToArray();
+            var list = Plugin.Manager.AetheryteList.ToList();
+            var mapList = new HashSet<string>();
+            foreach (var location in list) {
+                var locF = AetheryteDataManager.GetAetheryteLocationsByTerritoryId(location.ZoneId, Plugin.Language).FirstOrDefault();
+                if(locF == null) continue;
+                mapList.Add(locF.TerritoryName);
+            }
+            _mapList = mapList.ToArray();
+            _aetheryteList = list.Select(a => a.Name).ToArray();
             _lastAetheryteListUpdate = DateTime.UtcNow;
         }
 
@@ -71,6 +82,7 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.Combo("##hideLangSetting", ref _selectedLanguage, _languageList, _languageList.Length)) {
                 Config.TeleporterLanguage = (TeleporterLanguage)_selectedLanguage;
                 Config.Save();
+                _lastAetheryteListUpdate = DateTime.MinValue;
             }
 
             if (ImGui.Checkbox("Skip Ticket Popup", ref Config.SkipTicketPopup)) Config.Save();
@@ -95,7 +107,7 @@ namespace TeleporterPlugin.Gui {
                 Config.Save();
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Show a Window with customizable Buttons to quickly Teleport around.\n" +
-                                 "Rightclick on the Window or clicking the + Button to add a new Button\n" +
+                                 "Rightclick on the Window or click the + Button to add a new Button\n" +
                                  "Rightlick on any Button to Edit or Delete it");
             if(ImGui.Checkbox("Show Teleporter Messages in Chat", ref Config.PrintMessage))
                 Config.Save();
@@ -168,22 +180,37 @@ namespace TeleporterPlugin.Gui {
                 if (deleteAliasHovered && i == 0) {
                     ImGui.TextColored(ColorRed, alias.Aetheryte);
                 } else {
-                    ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 45);
+                    ImGui.SetNextItemWidth(ImGui.GetColumnWidth() - 75);
                     if (ImGui.InputText($"##hidelabelAliasValue{i}", ref alias.Aetheryte, 256))
                         Config.Save();
                     ImGui.SameLine();
                     if (ImGui.BeginCombo($"##hidelabelAliasSelect{i}", "", ImGuiComboFlags.NoPreview)) {
                         for (var a = 0; a < _aetheryteList.Length; a++) {
-                            var selected = alias.Aetheryte.Equals(_aetheryteList[a]);
+                            var selected = alias.Aetheryte.Equals(_aetheryteList[a], StringComparison.OrdinalIgnoreCase);
                             if (ImGui.Selectable(_aetheryteList[a], selected)) {
                                 alias.Aetheryte = _aetheryteList[a];
                                 Config.Save();
                             }
                             if (selected) ImGui.SetItemDefaultFocus();
                         }
-
                         ImGui.EndCombo();
                     }
+                    if(ImGui.IsItemHovered())
+                        ImGui.SetTooltip("Aetheryte Names");
+                    ImGui.SameLine();
+                    if (ImGui.BeginCombo($"##hidelabelAliasSelectMap{i}", "", ImGuiComboFlags.NoPreview)) {
+                        for (var a = 0; a < _mapList.Length; a++) {
+                            var selected = alias.Aetheryte.Equals(_mapList[a], StringComparison.OrdinalIgnoreCase);
+                            if (ImGui.Selectable(_mapList[a], selected)) {
+                                alias.Aetheryte = _mapList[a];
+                                Config.Save();
+                            }
+                            if (selected) ImGui.SetItemDefaultFocus();
+                        }
+                        ImGui.EndCombo();
+                    }
+                    if (ImGui.IsItemHovered())
+                        ImGui.SetTooltip("Map Names");
                 }
 
                 ImGui.NextColumn();

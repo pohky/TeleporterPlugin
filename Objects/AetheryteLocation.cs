@@ -6,6 +6,7 @@ namespace TeleporterPlugin.Objects {
         public Vector2 Location { get; set; }
         public uint AetheryteId { get; set; }
         public uint TerritoryId { get; set; }
+        public string TerritoryName { get; set; }
         public string Name { get; set; }
 
         public float Distance2D(Vector2 other) {

@@ -49,9 +49,16 @@ namespace TeleporterPlugin.Managers {
             }
         }
 
-        internal static List<AetheryteLocation> GetAetheryteLocationsByTerritory(uint territory, ClientLanguage language) {
+        internal static List<AetheryteLocation> GetAetheryteLocationsByTerritoryId(uint territory, ClientLanguage language) {
             var list = AetheryteLocations[language];
             return list.Where(l => l.TerritoryId == territory).ToList();
+        }
+
+        internal static List<AetheryteLocation> GetAetheryteLocationsByTerritoryName(string territory, ClientLanguage language, bool matchContains) {
+            var list = AetheryteLocations[language];
+            if(matchContains)
+                return list.Where(l => l.TerritoryName.ToUpperInvariant().Contains(territory.ToUpperInvariant())).ToList();
+            return list.Where(l => l.TerritoryName.Equals(territory, StringComparison.InvariantCultureIgnoreCase)).ToList();
         }
 
         public static void Init(DalamudPluginInterface plugin) {
@@ -60,6 +67,7 @@ namespace TeleporterPlugin.Managers {
 
             var aetheryteSheet = plugin.Data.GetExcelSheet<Aetheryte>();
             var mapSheet = plugin.Data.GetExcelSheet<Map>();
+            var territorySheet = plugin.Data.GetExcelSheet<TerritoryType>();
             var mapMarkerList = plugin.Data.GetExcelSheet<MapMarker>().Where(m => m.DataType == 3).ToList();
             
             foreach (ClientLanguage language in Enum.GetValues(typeof(ClientLanguage))) {
@@ -76,7 +84,7 @@ namespace TeleporterPlugin.Managers {
                         name = Regex.Replace(name, "[^\u0020-\u00FF]+", string.Empty, RegexOptions.Compiled);
                     if (!nameDictionary.ContainsKey(id))
                         nameDictionary.Add(id, name);
-
+                    
                     if (!aetheryte.IsAetheryte) continue;
                     var marker = mapMarkerList.FirstOrDefault(m => m.DataKey == aetheryte.RowId);
                     if (marker == null) continue;
@@ -86,6 +94,7 @@ namespace TeleporterPlugin.Managers {
                         AetheryteId = aetheryte.RowId,
                         Location = markerPos,
                         TerritoryId = aetheryte.Territory.Row,
+                        TerritoryName = placeNameSheet.GetRow(territorySheet.GetRow(aetheryte.Territory.Row).PlaceName.Row).Name,
                         Name = name
                     });
                 }

@@ -33,10 +33,16 @@ namespace TeleporterPlugin {
             AetheryteDataManager.Init(pluginInterface);
             Manager = new TeleportManager(this);
             Interface.CommandManager.AddHandler("/tp", new CommandInfo(CommandHandler) {
-                HelpMessage = "/tp <name> - Teleport to <name>"
+                HelpMessage = "<name> - Teleport to <name>"
             });
             Interface.CommandManager.AddHandler("/tpt", new CommandInfo(CommandHandler) {
-                HelpMessage = "/tpt <name> - Teleport to <name> using Aetheryte Tickets if possible"
+                HelpMessage = "<name> - Teleport to <name> using Aetheryte Tickets if possible"
+            });
+            Interface.CommandManager.AddHandler("/tpm", new CommandInfo(CommandHandler) {
+                HelpMessage = "<mapname> - Teleport to <mapname>"
+            });
+            Interface.CommandManager.AddHandler("/tptm", new CommandInfo(CommandHandler) {
+                HelpMessage = "<mapname> - Teleport to <mapname> using Aetheryte Tickets if possible"
             });
             Gui = new PluginUi(this);
             Interface.Framework.Gui.Chat.OnChatMessage += Gui.LinksWindow.ChatOnChatMessage;
@@ -87,10 +93,17 @@ namespace TeleporterPlugin {
 
         private void HandleTeleportCommand(string command, string args) {
             var locationString = args;
-            var type = command.Equals("/tpt", StringComparison.OrdinalIgnoreCase) ? TeleportType.Ticket : TeleportType.Direct;
+            var type = command.Equals("/tpt", StringComparison.OrdinalIgnoreCase) || command.Equals("/tptm", StringComparison.OrdinalIgnoreCase)
+                ? TeleportType.Ticket 
+                : TeleportType.Direct;
 
-            if (TryGetAlias(locationString, out var alias))
+            var useMap = command.EndsWith("m", StringComparison.OrdinalIgnoreCase);
+            var matchPartial = Config.AllowPartialMatch;
+
+            if (TryGetAlias(locationString, out var alias)) {
                 locationString = alias.Aetheryte;
+                matchPartial = false;
+            }
 
             if (Config.UseGilThreshold) {
                 var location = Manager.GetLocationByName(locationString);
@@ -98,13 +111,13 @@ namespace TeleporterPlugin {
                     if (location.GilCost > Config.GilThreshold)
                         type = TeleportType.Ticket;
             }
-
+            
             switch (type) {
                 case TeleportType.Direct:
-                    Manager.Teleport(locationString, Config.AllowPartialMatch);
+                    Manager.Teleport(locationString, matchPartial, useMap);
                     break;
                 case TeleportType.Ticket:
-                    Manager.TeleportTicket(locationString, Config.SkipTicketPopup, Config.AllowPartialMatch);
+                    Manager.TeleportTicket(locationString, Config.SkipTicketPopup, matchPartial, useMap);
                     break;
                 default:
                     LogError($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
@@ -120,16 +133,16 @@ namespace TeleporterPlugin {
         private void PrintHelpMessage(string command) {
             var helpText =
                 $"{Name} Help:\n" +
-                $"{command} help - Show this Message\n" +
 #if DEBUG
                 $"{command} debug - Show Debug Window\n" +
 #endif
                 $"{command} config - Show Settings Window\n" +
                 $"{command} links - Show Maplink Tracker\n" +
-                $"{command} quick - Show Quick Teleport Window\n";
-            if (command.Equals("/tpt", StringComparison.OrdinalIgnoreCase))
-                helpText += $"{command} <name> - Teleport to <name> using Aetheryte Tickets if possible (e.g. /tpt New Gridania)";
-            else helpText += $"{command} <name> - Teleport to <name> (e.g. /tp New Gridania)";
+                $"{command} quick - Show AetherGate Window\n" +
+                "/tp <name> - Teleport to <name> (/tp New Gridania)\n" +
+                "/tpt <name> - Teleport using Aetheryte tickets if possible\n" +
+                "/tpm <mapname> - Teleport to <mapname> (/tpm The Peaks)\n" +
+                "/tptm <mapname> - Teleport using Aetheryte tickets if possible";
             Interface.Framework.Gui.Chat.Print($"{helpText}\0");
         }
 
@@ -138,6 +151,8 @@ namespace TeleporterPlugin {
                 Interface.Framework.Gui.Chat.OnChatMessage -= Gui.LinksWindow.ChatOnChatMessage;
             Interface.CommandManager.RemoveHandler("/tp");
             Interface.CommandManager.RemoveHandler("/tpt");
+            Interface.CommandManager.RemoveHandler("/tpm");
+            Interface.CommandManager.RemoveHandler("/tptm");
             Gui?.Dispose();
             Manager?.Dispose();
             Interface?.Dispose();

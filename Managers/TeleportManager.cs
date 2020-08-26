@@ -75,8 +75,16 @@ namespace TeleporterPlugin.Managers {
             }
         }
         
-        public void Teleport(string aetheryteName, bool matchPartial = true) {
+        public void Teleport(string aetheryteName, bool matchPartial, bool useMapName = false) {
             try {
+                if (useMapName) {
+                    var name = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault()?.Name;
+                    if (name == null) {
+                        _plugin.LogError($"No Aetheryte found for Map '{aetheryteName}'.");
+                        return;
+                    }
+                    aetheryteName = name;
+                }
                 var location = GetLocationByName(aetheryteName, matchPartial);
                 if (location == null) {
                     _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");
@@ -92,8 +100,16 @@ namespace TeleporterPlugin.Managers {
             }
         }
 
-        public void TeleportTicket(string aetheryteName, bool skipPopup = false, bool matchPartial = true) {
+        public void TeleportTicket(string aetheryteName, bool skipPopup, bool matchPartial, bool useMapName = false) {
             try {
+                if (useMapName) {
+                    var name = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault()?.Name;
+                    if (name == null) {
+                        _plugin.LogError($"No Aetheryte found for Map '{aetheryteName}'.");
+                        return;
+                    }
+                    aetheryteName = name;
+                }
                 var location = GetLocationByName(aetheryteName, matchPartial);
                 if (location == null) {
                     _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");

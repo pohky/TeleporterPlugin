@@ -33,7 +33,7 @@ namespace TeleporterPlugin.Objects {
         }
 
         private AetheryteLocation GetClosestAetheryte() {
-            var aetherytes = AetheryteDataManager.GetAetheryteLocationsByTerritory(TerritoryId, _plugin.Language);
+            var aetherytes = AetheryteDataManager.GetAetheryteLocationsByTerritoryId(TerritoryId, _plugin.Language);
             if (aetherytes.Count <= 0) return null;
             return aetherytes.Aggregate((curMin, x) => curMin == null || x.Distance2D(Location) < curMin.Distance2D(Location) ? x : curMin);
         }
