@@ -13,6 +13,7 @@ namespace TeleporterPlugin {
         public bool SkipTicketPopup;
         public bool UseGilThreshold;
         public bool AllowPartialMatch = true;
+        public bool AllowPartialAlias = false;
         public bool ShowTooltips = true;
         public bool UseFloatingWindow;
         public int GilThreshold = 999;

@@ -66,6 +66,10 @@ namespace TeleporterPlugin.Gui {
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Matches the first Aetheryte found that contains ...\n" +
                                  "e.g.: 'kug' matches 'Kugane' or 'gridania' matches 'New Gridania'");
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Partial Alias", ref Config.AllowPartialAlias)) Config.Save();
+            if (Config.ShowTooltips && ImGui.IsItemHovered())
+                ImGui.SetTooltip("Match the start of Alias names");
 
             ImGui.SameLine(ImGui.GetColumnWidth() - 80);
             ImGui.TextUnformatted("Tooltips");

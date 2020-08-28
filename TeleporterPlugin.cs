@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Dalamud;
 using Dalamud.Game.ClientState.Actors.Types;
 using Dalamud.Game.Command;
@@ -92,7 +93,8 @@ namespace TeleporterPlugin {
         }
 
         private void HandleTeleportCommand(string command, string args) {
-            var locationString = args;
+            var locationString = args.Replace("\xe040", "").Replace("\xe041", "").Trim();
+            
             var type = command.Equals("/tpt", StringComparison.OrdinalIgnoreCase) || command.Equals("/tptm", StringComparison.OrdinalIgnoreCase)
                 ? TeleportType.Ticket 
                 : TeleportType.Direct;
@@ -100,7 +102,7 @@ namespace TeleporterPlugin {
             var useMap = command.EndsWith("m", StringComparison.OrdinalIgnoreCase);
             var matchPartial = Config.AllowPartialMatch;
 
-            if (TryGetAlias(locationString, out var alias)) {
+            if (TryGetAlias(locationString, out var alias, Config.AllowPartialAlias)) {
                 locationString = alias.Aetheryte;
                 matchPartial = false;
             }
@@ -125,8 +127,11 @@ namespace TeleporterPlugin {
             }
         }
 
-        private bool TryGetAlias(string name, out TeleportAlias alias) {
-            alias = Config.AliasList.FirstOrDefault(a => name.Equals(a.Alias, StringComparison.OrdinalIgnoreCase));
+        private bool TryGetAlias(string name, out TeleportAlias alias, bool matchPartial) {
+            if(matchPartial)
+                alias = Config.AliasList.FirstOrDefault(a => a.Alias.StartsWith(name, StringComparison.OrdinalIgnoreCase));
+            else
+                alias = Config.AliasList.FirstOrDefault(a => name.Equals(a.Alias, StringComparison.OrdinalIgnoreCase));
             return alias != null;
         }
 
