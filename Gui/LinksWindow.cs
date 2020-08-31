@@ -20,7 +20,7 @@ namespace TeleporterPlugin.Gui {
             if (!Visible && !Plugin.Config.LinkTrackerAlwaysActive) return;
             foreach (var payload in message.Payloads) {
                 if (!(payload is MapLinkPayload mapLink)) continue;
-                var link = new MapLink(Plugin, type, mapLink, sender.TextValue, ref message);
+                var link = new MapLink(Plugin, type, mapLink, sender.TextValue, message);
                 if (link.HasAetheryte) {
                     MapLinks.Add(link);
                     if (Plugin.Config.LinkTrackerAutoPop)
@@ -48,11 +48,16 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip("Also collect Links while this window is closed.");
             if (Plugin.Config.LinkTrackerAlwaysActive) {
+                ImGui.SameLine();
                 if(ImGui.Checkbox("Open on new Link", ref Plugin.Config.LinkTrackerAutoPop))
                     Plugin.Config.Save();
                 if (ImGui.IsItemHovered())
                     ImGui.SetTooltip("Open this window if a Link is posted in chat.");
             }
+            if (ImGui.Checkbox("Prefer Ticket Teleport", ref Plugin.Config.LinkTrackerUseTickets))
+                Plugin.Config.Save();
+            if(ImGui.IsItemHovered())
+                ImGui.SetTooltip("Try using Tickets when teleporting to closest Aetheryte");
             ImGui.Separator();
         }
 
@@ -71,7 +76,7 @@ namespace TeleporterPlugin.Gui {
             ImGui.TextDisabled("(?)");
             if (ImGui.IsItemHovered()) {
                 ImGui.SetTooltip("Double Click = Teleport to closest Aetheryte\n" +
-                                 "Shift + Left Click = Print full message to chat.\n" +
+                                 "Shift + Left Click = Set a flag on the Map.\n" +
                                  "Shift + Right Click = Delete Link from the list");
             }
 
@@ -90,20 +95,19 @@ namespace TeleporterPlugin.Gui {
                     _selectedLink = i;
                 if (ImGui.IsItemHovered()) {
                     if (ImGui.IsMouseDoubleClicked(0)) {
-                        if (link.HasAetheryte)
-                            Plugin.CommandHandler("/tpt", link.Aetheryte.Name);
+                        if (link.HasAetheryte) {
+                            if(Plugin.Config.LinkTrackerUseTickets)
+                                Plugin.CommandHandler("/tpt", link.Aetheryte.Name);
+                            else Plugin.CommandHandler("/tp", link.Aetheryte.Name);
+                        }
                         else Plugin.LogError($"No Aetheryte found for: {link}");
                     } else if (ImGui.IsMouseClicked(0) && IsShiftKeyPressed()) {
-                        Plugin.Interface.Framework.Gui.Chat.PrintChat(new XivChatEntry {
-                            MessageBytes = link.Data,
-                            Name = "TP",
-                            Type = XivChatType.Echo,
-                            SenderId = 0
-                        });
+                        link.OpenOnMap();
                     } else if (ImGui.IsMouseClicked(1) && IsShiftKeyPressed()) {
                         UndoLinkStack.Push(link);
                         MapLinks.Remove(link);
                     }
+                    ImGui.SetTooltip(link.Message);
                 }
 
                 ImGui.NextColumn();

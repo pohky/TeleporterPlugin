@@ -22,6 +22,7 @@ namespace TeleporterPlugin {
 
         public bool LinkTrackerAutoPop = true;
         public bool LinkTrackerAlwaysActive = false;
+        public bool LinkTrackerUseTickets = true;
 
         public bool PrintMessage = true;
         public bool PrintError = true;

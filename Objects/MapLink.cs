@@ -19,8 +19,9 @@ namespace TeleporterPlugin.Objects {
         public string Message { get; }
         public byte[] Data { get; }
         public XivChatType ChatType { get; }
+        public MapLinkPayload Payload { get; }
 
-        public MapLink(TeleporterPlugin plugin, XivChatType type, MapLinkPayload payload, string senderName, ref SeString message) {
+        public MapLink(TeleporterPlugin plugin, XivChatType type, MapLinkPayload payload, string senderName, SeString message) {
             _plugin = plugin;
             ChatType = type;
             Location = new Vector2(payload.XCoord, payload.YCoord);
@@ -30,6 +31,7 @@ namespace TeleporterPlugin.Objects {
             Message = message.TextValue;
             Data = message.Encode();
             Aetheryte = GetClosestAetheryte();
+            Payload = new MapLinkPayload(_plugin.Interface.Data, payload.TerritoryType.RowId, payload.Map.RowId, payload.RawX, payload.RawY);
         }
 
         private AetheryteLocation GetClosestAetheryte() {
@@ -42,7 +44,11 @@ namespace TeleporterPlugin.Objects {
             return _typeString ?? (_typeString = GetEnumDescription(ChatType));
         }
 
-        public static string GetEnumDescription(Enum value) {
+        public bool OpenOnMap() {
+            return _plugin.Interface.Framework.Gui.OpenMapWithMapLink(Payload);
+        }
+
+        private static string GetEnumDescription(Enum value) {
             var fi = value.GetType().GetField(value.ToString());
             if (fi.GetCustomAttributes(typeof(XivChatTypeInfoAttribute), false) is XivChatTypeInfoAttribute[] attributes && attributes.Any()) {
                 return attributes.First().FancyName;
