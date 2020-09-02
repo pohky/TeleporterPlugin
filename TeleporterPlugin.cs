@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Dalamud;
 using Dalamud.Game.ClientState.Actors.Types;
 using Dalamud.Game.Command;

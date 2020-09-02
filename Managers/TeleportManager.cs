@@ -41,8 +41,6 @@ namespace TeleporterPlugin.Managers {
             }
         }
 
-        
-
         #region Teleport
 
         private bool TicketTpHook(IntPtr tpStatusPtr, uint aetheryteId, byte subIndex) {
@@ -102,14 +100,17 @@ namespace TeleporterPlugin.Managers {
 
         public void TeleportTicket(string aetheryteName, bool skipPopup, bool matchPartial, bool useMapName = false) {
             try {
+                _tpTicketHook?.Disable();
                 if (useMapName) {
                     var name = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault()?.Name;
                     if (name == null) {
                         _plugin.LogError($"No Aetheryte found for Map '{aetheryteName}'.");
                         return;
                     }
+
                     aetheryteName = name;
                 }
+
                 var location = GetLocationByName(aetheryteName, matchPartial);
                 if (location == null) {
                     _plugin.LogError($"No attuned Aetheryte found for '{aetheryteName}'.");
@@ -127,12 +128,8 @@ namespace TeleporterPlugin.Managers {
                     }
                 } else {
                     bool? result = false;
-                    if (TeleportStatusAddress != IntPtr.Zero) {
-                        if (_tpTicketHook != null)
-                            result = _tpTicketHook.Original(TeleportStatusAddress, location.AetheryteId, location.SubIndex);
-                        else result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.AetheryteId, location.SubIndex);
-                    }
-
+                    if (TeleportStatusAddress != IntPtr.Zero)
+                        result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.AetheryteId, location.SubIndex);
                     if (result == true) {
                         _plugin.Log($"Teleporting to '{location.Name}'.");
                         return;
@@ -143,6 +140,8 @@ namespace TeleporterPlugin.Managers {
                 _sendCommand?.Invoke(0xCA, location.AetheryteId, false, location.SubIndex, 0);
             } catch {
                 _plugin.LogError("Error in TeleportTicket(string,bool,bool)");
+            } finally {
+                _tpTicketHook?.Enable();
             }
         }
 
@@ -236,7 +235,7 @@ namespace TeleporterPlugin.Managers {
             }
             var aetheryteListOffset = Marshal.ReadInt32(aetheryteListAob, 5);
             AetheryteListAddress = scanner.ResolveRelativeAddress(aetheryteListAob + 9, aetheryteListOffset);
-            TeleportStatusAddress = AetheryteListAddress == IntPtr.Zero ? IntPtr.Zero : AetheryteListAddress + 0x20;
+            TeleportStatusAddress = AetheryteListAddress == IntPtr.Zero ? IntPtr.Zero : AetheryteListAddress + 0x28;
             if (TeleportStatusAddress == IntPtr.Zero) {
                 _plugin.LogError("TeleportStatusAddress is null.");
                 return;

@@ -21,7 +21,6 @@ namespace TeleporterPlugin.Gui {
                 ImGui.TextUnformatted($"TeleportStatus: {Plugin.Manager.TeleportStatusAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"ItemCountStaticArg: {Plugin.Manager.ItemCountStaticArgAddress.ToInt64():X8}");
                 ImGui.Separator();
-
                 if (ImGui.Button("GetList")) {
                     dbg_locations.Clear();
                     dbg_aetheryteId.Clear();
