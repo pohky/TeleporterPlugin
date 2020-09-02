@@ -8,6 +8,7 @@ namespace TeleporterPlugin.Gui {
         private readonly List<string> dbg_aetheryteId = new List<string> {"Empty"};
         private readonly List<string> dbg_subIndex = new List<string> {"Empty"};
         private readonly List<string> dbg_zoneId = new List<string> {"Empty"};
+        private readonly List<string> dbg_price = new List<string> {"Empty"};
         private int dbg_selected;
 
         public DebugWindow(TeleporterPlugin plugin) : base(plugin) { }
@@ -26,11 +27,13 @@ namespace TeleporterPlugin.Gui {
                     dbg_aetheryteId.Clear();
                     dbg_subIndex.Clear();
                     dbg_zoneId.Clear();
+                    dbg_price.Clear();
                     foreach (var location in Plugin.Manager.AetheryteList) {
                         dbg_locations.Add(location.Name);
                         dbg_aetheryteId.Add(location.AetheryteId.ToString());
                         dbg_subIndex.Add(location.SubIndex.ToString());
                         dbg_zoneId.Add(location.ZoneId.ToString());
+                        dbg_price.Add(location.GilCost.ToString());
                     }
                 }
 
@@ -45,15 +48,17 @@ namespace TeleporterPlugin.Gui {
                     Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], false, true);
 
                 ImGui.BeginChild("##scrollingregion");
-                ImGui.Columns(4, "##listbox");
+                ImGui.Columns(5, "##listbox");
                 ImGui.SetColumnWidth(1, 50);
                 ImGui.SetColumnWidth(2, 80);
                 ImGui.SetColumnWidth(3, 80);
+                ImGui.SetColumnWidth(4, 80);
                 ImGui.Separator();
                 ImGui.Text("Name"); ImGui.NextColumn();
                 ImGui.Text("Id"); ImGui.NextColumn();
                 ImGui.Text("SubIndex"); ImGui.NextColumn();
                 ImGui.Text("ZoneId"); ImGui.NextColumn();
+                ImGui.Text("Price"); ImGui.NextColumn();
 
                 ImGui.Separator();
                 for (var i = 0; i < dbg_locations.Count; i++) {
@@ -65,6 +70,8 @@ namespace TeleporterPlugin.Gui {
                     ImGui.Text(dbg_subIndex[i]);
                     ImGui.NextColumn();
                     ImGui.Text(dbg_zoneId[i]);
+                    ImGui.NextColumn();
+                    ImGui.Text(dbg_price[i]);
                     ImGui.NextColumn();
                 }
 
