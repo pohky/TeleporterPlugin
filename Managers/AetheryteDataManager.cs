@@ -78,7 +78,7 @@ namespace TeleporterPlugin.Managers {
                 foreach (var aetheryte in aetheryteSheet) {
                     var id = aetheryte.RowId;
                     if (id <= 0) continue;
-                    var name = placeNameSheet.GetRow(aetheryte.PlaceName.Row).Name;
+                    string name = placeNameSheet.GetRow(aetheryte.PlaceName.Row).Name;
                     if (string.IsNullOrEmpty(name)) continue;
                     if (language == ClientLanguage.German)
                         name = Regex.Replace(name, "[^\u0020-\u00FF]+", string.Empty, RegexOptions.Compiled);

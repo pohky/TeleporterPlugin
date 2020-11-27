@@ -32,27 +32,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dalamud">
-      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Dalamud.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="EasyHook">
-      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\EasyHook.dll</HintPath>
+      <HintPath>..\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ImGui.NET">
-      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\ImGui.NET.dll</HintPath>
+      <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGui.NET.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ImGuiScene">
-      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\ImGuiScene.dll</HintPath>
+      <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGuiScene.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Lumina">
-      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Lumina.dll</HintPath>
+      <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Lumina.Generated">
-      <HintPath>..\..\..\AppData\Roaming\XIVLauncher\addon\Hooks\Lumina.Generated.dll</HintPath>
+    <Reference Include="Lumina.Excel">
+      <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.Excel.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
