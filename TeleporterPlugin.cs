@@ -107,7 +107,8 @@ namespace TeleporterPlugin {
             }
 
             if (Config.UseGilThreshold) {
-                var location = Manager.GetLocationByName(locationString);
+                var locationName = useMap ? AetheryteDataManager.GetAetheryteLocationsByTerritoryName(locationString, Language, matchPartial).FirstOrDefault()?.Name : locationString;
+                var location = Manager.GetLocationByName(locationName);
                 if (location != null)
                     if (location.GilCost > Config.GilThreshold)
                         type = TeleportType.Ticket;

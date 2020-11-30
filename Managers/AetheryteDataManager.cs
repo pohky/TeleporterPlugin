@@ -55,6 +55,8 @@ namespace TeleporterPlugin.Managers {
         }
 
         internal static List<AetheryteLocation> GetAetheryteLocationsByTerritoryName(string territory, ClientLanguage language, bool matchContains) {
+            if (string.IsNullOrEmpty(territory))
+                return new List<AetheryteLocation>();
             var list = AetheryteLocations[language];
             if(matchContains)
                 return list.Where(l => l.TerritoryName.ToUpperInvariant().Contains(territory.ToUpperInvariant())).ToList();
