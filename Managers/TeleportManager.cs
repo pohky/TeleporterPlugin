@@ -75,12 +75,16 @@ namespace TeleporterPlugin.Managers {
         
         public void Teleport(string aetheryteName, bool matchPartial, bool useMapName = false) {
             try {
+                var mapName = "";
                 if (useMapName) {
-                    var name = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault()?.Name;
+                    var aetheryteLocation = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault();
+                    var name = aetheryteLocation?.Name;
+                    mapName = aetheryteLocation?.TerritoryName;
                     if (name == null) {
                         _plugin.LogError($"No Aetheryte found for Map '{aetheryteName}'.");
                         return;
                     }
+
                     aetheryteName = name;
                 }
                 var location = GetLocationByName(aetheryteName, matchPartial);
@@ -91,7 +95,7 @@ namespace TeleporterPlugin.Managers {
                     return;
                 }
 
-                _plugin.Log($"Teleporting to '{location.Name}'.");
+                _plugin.Log($"Teleporting to '{location.Name}'" + (useMapName ? $" in '{mapName}'" : "") + ".");
                 _sendCommand?.Invoke(0xCA, location.AetheryteId, false, location.SubIndex, 0);
             } catch {
                 _plugin.LogError("Error in Teleport(string,bool)");
@@ -101,8 +105,11 @@ namespace TeleporterPlugin.Managers {
         public void TeleportTicket(string aetheryteName, bool skipPopup, bool matchPartial, bool useMapName = false) {
             try {
                 _tpTicketHook?.Disable();
+                var mapName = "";
                 if (useMapName) {
-                    var name = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault()?.Name;
+                    var aetheryteLocation = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, _plugin.Language, matchPartial).FirstOrDefault();
+                    var name = aetheryteLocation?.Name;
+                    mapName = aetheryteLocation?.TerritoryName;
                     if (name == null) {
                         _plugin.LogError($"No Aetheryte found for Map '{aetheryteName}'.");
                         return;
@@ -122,7 +129,7 @@ namespace TeleporterPlugin.Managers {
                 if (skipPopup) {
                     var tickets = GetAetheryteTicketCount();
                     if (tickets > 0) {
-                        _plugin.Log($"Teleporting to '{location.Name}'. (Tickets: {tickets})");
+                        _plugin.Log($"Teleporting to '{location.Name}'" + (useMapName ? $" in '{mapName}'" : "") + $". (Tickets: {tickets})");
                         _sendCommand?.Invoke(0xCA, location.AetheryteId, true, location.SubIndex, 0);
                         return;
                     }
@@ -131,12 +138,12 @@ namespace TeleporterPlugin.Managers {
                     if (TeleportStatusAddress != IntPtr.Zero)
                         result = _tryTeleportWithTicket?.Invoke(TeleportStatusAddress, location.AetheryteId, location.SubIndex);
                     if (result == true) {
-                        _plugin.Log($"Teleporting to '{location.Name}'.");
+                        _plugin.Log($"Teleporting to '{location.Name}'" + (useMapName ? $" in '{mapName}'" : "") + ".");
                         return;
                     }
                 }
 
-                _plugin.Log($"Teleporting to '{location.Name}'. (Not using Tickets)");
+                _plugin.Log($"Teleporting to '{location.Name}'" + (useMapName ? $" in '{mapName}'" : "") + ". (Not using Tickets)");
                 _sendCommand?.Invoke(0xCA, location.AetheryteId, false, location.SubIndex, 0);
             } catch {
                 _plugin.LogError("Error in TeleportTicket(string,bool,bool)");
