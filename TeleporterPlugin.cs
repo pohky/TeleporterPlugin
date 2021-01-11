@@ -16,7 +16,7 @@ namespace TeleporterPlugin {
         public TeleportManager Manager { get; private set; }
         public PlayerCharacter LocalPlayer => Interface.ClientState.LocalPlayer;
         public bool IsLoggedIn => LocalPlayer != null;
-        public bool IsInHomeWorld => LocalPlayer?.CurrentWorld == LocalPlayer?.HomeWorld;
+        public bool IsInHomeWorld => LocalPlayer?.CurrentWorld.Id == LocalPlayer?.HomeWorld.Id;
 
         public ClientLanguage Language {
             get {
