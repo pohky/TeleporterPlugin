@@ -17,6 +17,7 @@ namespace TeleporterPlugin.Gui {
         public LinksWindow(TeleporterPlugin plugin) : base(plugin) { }
 
         public void ChatOnChatMessage(XivChatType type, uint senderid, ref SeString sender, ref SeString message, ref bool ishandled) {
+            return;
             if (!Visible && !Plugin.Config.LinkTrackerAlwaysActive) return;
             foreach (var payload in message.Payloads) {
                 if (!(payload is MapLinkPayload mapLink)) continue;
@@ -30,6 +31,7 @@ namespace TeleporterPlugin.Gui {
         }
 
         protected override void DrawUi() {
+            return;
             ImGui.SetNextWindowSize(new Vector2(350, 150), ImGuiCond.FirstUseEver);
             if (!ImGui.Begin("TP Link Tracker", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse)) {
                 ImGui.End();
@@ -94,16 +96,16 @@ namespace TeleporterPlugin.Gui {
                 if (ImGui.Selectable($"{link.SenderName}", _selectedLink == i, ImGuiSelectableFlags.SpanAllColumns))
                     _selectedLink = i;
                 if (ImGui.IsItemHovered()) {
-                    if (ImGui.IsMouseDoubleClicked(0)) {
+                    if (ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left)) {
                         if (link.HasAetheryte) {
                             if(Plugin.Config.LinkTrackerUseTickets)
                                 Plugin.CommandHandler("/tpt", link.Aetheryte.Name);
                             else Plugin.CommandHandler("/tp", link.Aetheryte.Name);
                         }
                         else Plugin.LogError($"No Aetheryte found for: {link}");
-                    } else if (ImGui.IsMouseClicked(0) && IsShiftKeyPressed()) {
+                    } else if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && IsShiftKeyPressed()) {
                         link.OpenOnMap();
-                    } else if (ImGui.IsMouseClicked(1) && IsShiftKeyPressed()) {
+                    } else if (ImGui.IsMouseClicked(ImGuiMouseButton.Right) && IsShiftKeyPressed()) {
                         UndoLinkStack.Push(link);
                         MapLinks.Remove(link);
                     }

@@ -6,7 +6,10 @@ namespace TeleporterPlugin.Objects {
         [FieldOffset(0)] public uint AetheryteId;
         [FieldOffset(4)] public uint GilCost;
         [FieldOffset(8)] public ushort ZoneId;
-        [FieldOffset(13)] public byte SubIndex;
+        [FieldOffset(0x0B)] public byte Ward;
+        [FieldOffset(0x0C)] public byte Plot;
+        [FieldOffset(0x0D)] public byte SubIndex;
+        [FieldOffset(0x0E)] public byte IsFavourite;
     }
 
     public class TeleportLocation {

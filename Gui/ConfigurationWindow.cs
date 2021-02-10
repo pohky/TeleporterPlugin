@@ -143,7 +143,7 @@ namespace TeleporterPlugin.Gui {
 
             ImGui.SameLine();
             if (ImGui.Button("Delete All"))
-                ImGui.OpenPopupOnItemClick("deleteallpopup", 0);
+                ImGui.OpenPopupContextItem("deleteallpopup", ImGuiPopupFlags.MouseButtonLeft);
 
             if (ImGui.BeginPopup("deleteallpopup")) {
                 ImGui.TextColored(ColorRed, "Are you sure you want to delete ALL aliases?");

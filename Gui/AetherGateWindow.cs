@@ -29,7 +29,7 @@ namespace TeleporterPlugin.Gui {
             }
             
             if (ImGui.BeginChild("##floatyButtons")) {
-                if (ImGui.BeginPopupContextWindow("##addButton", 1, false)) {
+                if (ImGui.BeginPopupContextWindow("##addButton", ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems)) {
                     ImGui.TextUnformatted("Add New Button");
                     ImGui.TextUnformatted("Name:");
                     ImGui.SameLine();
@@ -123,7 +123,8 @@ namespace TeleporterPlugin.Gui {
                         ImGui.EndPopup();
                     }
 
-                    ImGui.OpenPopupOnItemClick($"##editButton{i}", 1);
+                    //ImGui.OpenPopupOnItemClick($"##editButton{i}", 1);
+                    ImGui.OpenPopupContextItem($"##editButton{i}", ImGuiPopupFlags.MouseButtonRight);
                 }
 
                 var buttSizeX = ImGui.CalcTextSize("+").X + 2 * style.FramePadding.X;
