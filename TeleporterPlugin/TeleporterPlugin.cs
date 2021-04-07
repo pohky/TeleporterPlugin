@@ -63,7 +63,7 @@ namespace TeleporterPlugin {
         public void CommandHandler(string command, string arguments) {
             var args = arguments.Trim().Replace("\"", string.Empty);
             if (string.IsNullOrEmpty(args) || args.Equals("help", StringComparison.OrdinalIgnoreCase)) {
-                PrintHelpMessage(command);
+                PrintHelpMessage();
                 return;
             }
 
@@ -128,14 +128,14 @@ namespace TeleporterPlugin {
             return alias != null;
         }
 
-        private void PrintHelpMessage(string command) {
+        private void PrintHelpMessage() {
             var helpText =
                 $"{Name} Help:\n" +
 #if DEBUG
-                $"{command} debug - Show Debug Window\n" +
+                "/tp debug - Show Debug Window\n" +
 #endif
-                $"{command} config - Show Settings Window\n" +
-                $"{command} quick - Show AetherGate Window\n" +
+                "/tp config - Show Settings Window\n" +
+                "/tp quick - Show AetherGate Window\n" +
                 "/tp <name> - Teleport to <name> (/tp New Gridania)\n" +
                 "/tpt <name> - Teleport using Aetheryte tickets if possible\n" +
                 "/tpm <mapname> - Teleport to <mapname> (/tpm The Peaks)\n" +

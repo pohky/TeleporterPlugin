@@ -1,20 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using ImGuiNET;
+using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Gui {
     public class DebugWindow : Window<TeleporterPlugin> {
-        private readonly List<string> dbg_locations = new List<string> {"GetList to Update"};
-        private readonly List<string> dbg_aetheryteId = new List<string> {"Empty"};
-        private readonly List<string> dbg_subIndex = new List<string> {"Empty"};
-        private readonly List<string> dbg_zoneId = new List<string> {"Empty"};
-        private readonly List<string> dbg_price = new List<string> {"Empty"};
         private int dbg_selected;
+        private readonly List<TeleportLocation> dbg_locationList = new();
 
-        public DebugWindow(TeleporterPlugin plugin) : base(plugin) { }
+        private readonly string[] m_LanguageList;
+        private int m_SelectedLanguage;
+
+        public DebugWindow(TeleporterPlugin plugin) : base(plugin) {
+            m_LanguageList = Enum.GetNames(typeof(TeleporterLanguage));
+            m_SelectedLanguage = (int)plugin.Config.TeleporterLanguage;
+        }
 
         protected override void DrawUi() {
-            var windowSize = new Vector2(350, 315);
+            var windowSize = new Vector2(450, 315);
             ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(windowSize, new Vector2(float.MaxValue, float.MaxValue));
             if (ImGui.Begin($"{Plugin.Name} Debug", ref WindowVisible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
@@ -23,56 +27,66 @@ namespace TeleporterPlugin.Gui {
                 ImGui.TextUnformatted($"ItemCountStaticArg: {Plugin.Manager.ItemCountStaticArgAddress.ToInt64():X8}");
                 ImGui.Separator();
                 if (ImGui.Button("GetList")) {
-                    dbg_locations.Clear();
-                    dbg_aetheryteId.Clear();
-                    dbg_subIndex.Clear();
-                    dbg_zoneId.Clear();
-                    dbg_price.Clear();
-                    foreach (var location in Plugin.Manager.AetheryteList) {
-                        dbg_locations.Add(location.Name);
-                        dbg_aetheryteId.Add(location.AetheryteId.ToString());
-                        dbg_subIndex.Add(location.SubIndex.ToString());
-                        dbg_zoneId.Add(location.ZoneId.ToString());
-                        dbg_price.Add(location.GilCost.ToString());
-                    }
+                    var lang = Plugin.Config.TeleporterLanguage;
+                    Plugin.Config.TeleporterLanguage = (TeleporterLanguage)m_SelectedLanguage;
+                    dbg_locationList.Clear();
+                    dbg_locationList.AddRange(Plugin.Manager.AetheryteList);
+                    Plugin.Config.TeleporterLanguage = lang;
                 }
 
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport"))
-                    Plugin.Manager.Teleport(dbg_locations[dbg_selected], true);
+                    Plugin.Manager.Teleport(dbg_locationList[dbg_selected].Name, true);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket)"))
-                    Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], true, true);
+                    Plugin.Manager.TeleportTicket(dbg_locationList[dbg_selected].Name, true, true);
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket + Popup)"))
-                    Plugin.Manager.TeleportTicket(dbg_locations[dbg_selected], false, true);
+                    Plugin.Manager.TeleportTicket(dbg_locationList[dbg_selected].Name, false, true);
+
+                ImGui.SameLine();
+                ImGui.SetNextItemWidth(150);
+                ImGui.Combo("##dbgLangSetting", ref m_SelectedLanguage, m_LanguageList, m_LanguageList.Length);
 
                 ImGui.BeginChild("##scrollingregion");
-                ImGui.Columns(5, "##listbox");
+                ImGui.Columns(7, "##listbox");
                 ImGui.SetColumnWidth(1, 50);
                 ImGui.SetColumnWidth(2, 80);
-                ImGui.SetColumnWidth(3, 80);
-                ImGui.SetColumnWidth(4, 80);
+                ImGui.SetColumnWidth(3, 50);
+                ImGui.SetColumnWidth(4, 50);
+                ImGui.SetColumnWidth(5, 80);
+                ImGui.SetColumnWidth(6, 80);
                 ImGui.Separator();
                 ImGui.Text("Name"); ImGui.NextColumn();
                 ImGui.Text("Id"); ImGui.NextColumn();
                 ImGui.Text("SubIndex"); ImGui.NextColumn();
+                ImGui.Text("Ward"); ImGui.NextColumn();
+                ImGui.Text("Plot"); ImGui.NextColumn();
                 ImGui.Text("ZoneId"); ImGui.NextColumn();
                 ImGui.Text("Price"); ImGui.NextColumn();
 
                 ImGui.Separator();
-                for (var i = 0; i < dbg_locations.Count; i++) {
-                    if (ImGui.Selectable($"{dbg_locations[i]}", dbg_selected == i, ImGuiSelectableFlags.SpanAllColumns))
-                        dbg_selected = i;
-                    ImGui.NextColumn();
-                    ImGui.Text(dbg_aetheryteId[i]);
-                    ImGui.NextColumn();
-                    ImGui.Text(dbg_subIndex[i]);
-                    ImGui.NextColumn();
-                    ImGui.Text(dbg_zoneId[i]);
-                    ImGui.NextColumn();
-                    ImGui.Text(dbg_price[i]);
-                    ImGui.NextColumn();
+                if (dbg_locationList.Count == 0) {
+                    ImGui.TextUnformatted("GetList to Update");
+                } else {
+                    for (var i = 0; i < dbg_locationList.Count; i++) {
+                        var location = dbg_locationList[i];
+                        if (ImGui.Selectable($"{location.Name}", dbg_selected == i, ImGuiSelectableFlags.SpanAllColumns))
+                            dbg_selected = i;
+                        ImGui.NextColumn();
+                        ImGui.TextUnformatted($"{location.AetheryteId}");
+                        ImGui.NextColumn();
+                        ImGui.TextUnformatted($"{location.SubIndex}");
+                        ImGui.NextColumn();
+                        ImGui.TextUnformatted($"{location.Ward}");
+                        ImGui.NextColumn();
+                        ImGui.TextUnformatted($"{location.Plot}");
+                        ImGui.NextColumn();
+                        ImGui.TextUnformatted($"{location.ZoneId}");
+                        ImGui.NextColumn();
+                        ImGui.TextUnformatted($"{location.GilCost}");
+                        ImGui.NextColumn();
+                    }
                 }
 
                 ImGui.EndChild();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Dalamud;
 using Dalamud.Plugin;
 using Lumina.Excel.GeneratedSheets;
@@ -12,36 +11,28 @@ namespace TeleporterPlugin.Managers {
         public static Dictionary<ClientLanguage, Dictionary<uint, string>> AetheryteNames = new();
         public static Dictionary<ClientLanguage, List<AetheryteLocation>> AetheryteLocations = new();
 
-        private static readonly Dictionary<ClientLanguage, string> _apartmentNames = new() {
-            {ClientLanguage.English, "Apartment"},
-            {ClientLanguage.German, "Wohnung"},
-            {ClientLanguage.French, "Appartement"},
-            {ClientLanguage.Japanese, "アパルトメント"}
+        private static readonly Dictionary<ClientLanguage, string> m_ApartmentNames = new();
+
+        private static readonly Dictionary<ClientLanguage, string> m_SharedHouseNames = new() {
+            { ClientLanguage.English, "Shared Estate (<number>)" },
+            { ClientLanguage.German, "Wohngemeinschaft (<number>)" },
+            { ClientLanguage.French, "Maison (<number>)" },
+            { ClientLanguage.Japanese, "ハウス（シェア：<number>）" }
         };
 
-        private static readonly Dictionary<ClientLanguage, string> _sharedHouseNames = new() {
-            {ClientLanguage.English, "Shared Estate (<number>)"},
-            {ClientLanguage.German, "Wohngemeinschaft (<number>)"},
-            {ClientLanguage.French, "Maison (<number>)"},
-            {ClientLanguage.Japanese, "ハウス（シェア：<number>）"}
-        };
-
-        private static readonly uint[] _privateHouseIds = {59, 60, 61, 97}; //limsa, gridania, uldah, kugane
-
-        internal static string GetAetheryteName(uint id, byte subIndex, ClientLanguage language) {
+        internal static string GetAetheryteName(TeleportLocationStruct data, ClientLanguage language) {
             if (!AetheryteNames.TryGetValue(language, out var list))
                 return string.Empty;
-            if (!list.TryGetValue(id, out var name))
+            if (!list.TryGetValue(data.AetheryteId, out var name))
                 return string.Empty;
-            if (!_privateHouseIds.Contains(id))
-                return name;
 
-            return subIndex switch {
-                0 => name, //use default name
-                128 => _apartmentNames[language],
-                var n when n >= 1 && n <= 127 => _sharedHouseNames[language].Replace("<number>", $"{subIndex}"),
-                _ => $"Unknown Estate ({id}, {subIndex})"
-            };
+            if (data.IsAppartment)
+                return m_ApartmentNames[language];
+
+            if (data.IsShared)
+                return m_SharedHouseNames[language].Replace("<number>", $"{data.SubIndex}");
+
+            return name;
         }
 
         internal static List<AetheryteLocation> GetAetheryteLocationsByTerritoryId(uint territory, ClientLanguage language) {
@@ -61,11 +52,15 @@ namespace TeleporterPlugin.Managers {
         public static void Init(DalamudPluginInterface plugin) {
             AetheryteNames = new Dictionary<ClientLanguage, Dictionary<uint, string>>();
             AetheryteLocations = new Dictionary<ClientLanguage, List<AetheryteLocation>>();
+            m_ApartmentNames.Clear();
 
             var aetheryteSheet = plugin.Data.GetExcelSheet<Aetheryte>();
             var territorySheet = plugin.Data.GetExcelSheet<TerritoryType>();
             
             foreach (ClientLanguage language in Enum.GetValues(typeof(ClientLanguage))) {
+                var addonSheet = plugin.Data.GetExcelSheet<Addon>(language);
+                m_ApartmentNames[language] = addonSheet.GetRow(6760).Text.ToString();
+
                 var placeNameSheet = plugin.Data.GetExcelSheet<PlaceName>(language);
                 var nameDictionary = new Dictionary<uint, string>();
                 var locationList = new List<AetheryteLocation>();
@@ -73,17 +68,22 @@ namespace TeleporterPlugin.Managers {
                 foreach (var aetheryte in aetheryteSheet) {
                     var id = aetheryte.RowId;
                     if (id <= 0) continue;
-                    string name = placeNameSheet.GetRow(aetheryte.PlaceName.Row).Name;
+                    var name = placeNameSheet.GetRow(aetheryte.PlaceName.Row).Name.ToString();
                     if (string.IsNullOrEmpty(name)) continue;
-                    if (language == ClientLanguage.German)
-                        name = Regex.Replace(name, "[^\u0020-\u00FF]+", string.Empty, RegexOptions.Compiled);
+
+                    name = plugin.Sanitizer.Sanitize(name, language);
+                    
                     if (!nameDictionary.ContainsKey(id))
                         nameDictionary.Add(id, name);
 
                     if (!aetheryte.IsAetheryte) continue;
+
+                    var territoryName = placeNameSheet.GetRow(territorySheet.GetRow(aetheryte.Territory.Row).PlaceName.Row).Name.ToString();
+                    territoryName = plugin.Sanitizer.Sanitize(territoryName, language);
+
                     locationList.Add(new AetheryteLocation {
                         TerritoryId = aetheryte.Territory.Row,
-                        TerritoryName = placeNameSheet.GetRow(territorySheet.GetRow(aetheryte.Territory.Row).PlaceName.Row).Name,
+                        TerritoryName = territoryName,
                         Name = name
                     });
                 }

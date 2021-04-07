@@ -173,7 +173,7 @@ namespace TeleporterPlugin.Managers {
             var language = m_Plugin.Language;
             for (var i = 0; i < count; i++) {
                 var data = Marshal.PtrToStructure<TeleportLocationStruct>(start + i * size);
-                var name = AetheryteDataManager.GetAetheryteName(data.AetheryteId, data.SubIndex, language);
+                var name = AetheryteDataManager.GetAetheryteName(data, language);
                 yield return new TeleportLocation(data, name);
             }
         }
