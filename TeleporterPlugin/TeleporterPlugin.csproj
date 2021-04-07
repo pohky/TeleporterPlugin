@@ -9,38 +9,27 @@
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
  </PropertyGroup>
- <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-  <DebugType>full</DebugType>
- </PropertyGroup>
- <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-  <DebugType>pdbonly</DebugType>
- </PropertyGroup>
  <ItemGroup>
   <Reference Include="Dalamud">
-   <HintPath>..\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
+   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Dalamud.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="ImGui.NET">
-   <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGui.NET.dll</HintPath>
+   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGui.NET.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="ImGuiScene">
-   <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGuiScene.dll</HintPath>
+   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGuiScene.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="Lumina">
-   <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.dll</HintPath>
+   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="Lumina.Excel">
-   <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.Excel.dll</HintPath>
+   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.Excel.dll</HintPath>
    <Private>False</Private>
   </Reference>
- </ItemGroup>
- <ItemGroup>
-  <None Include="TeleporterPlugin.json">
-   <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
  </ItemGroup>
  <ItemGroup>
   <PackageReference Include="DalamudPackager" Version="1.2.1" />
