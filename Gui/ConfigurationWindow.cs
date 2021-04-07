@@ -10,18 +10,18 @@ using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Gui {
     public class ConfigurationWindow : Window<TeleporterPlugin> {
-        private static readonly Vector4 ColorRed = new Vector4(255, 0, 0, 255);
-        private readonly string[] _languageList;
-        private int _selectedLanguage;
-        private DateTime _lastAetheryteListUpdate = DateTime.MinValue;
-        private string[] _aetheryteList = new string[0];
-        private string[] _mapList = new string[0];
+        private static readonly Vector4 ColorRed = new(255, 0, 0, 255);
+        private readonly string[] m_LanguageList;
+        private int m_SelectedLanguage;
+        private DateTime m_LastAetheryteListUpdate = DateTime.MinValue;
+        private string[] m_AetheryteList = new string[0];
+        private string[] m_MapList = new string[0];
 
         public Configuration Config => Plugin.Config;
 
         public ConfigurationWindow(TeleporterPlugin plugin) : base(plugin) {
-            _languageList = Enum.GetNames(typeof(TeleporterLanguage));
-            _selectedLanguage = (int)plugin.Config.TeleporterLanguage;
+            m_LanguageList = Enum.GetNames(typeof(TeleporterLanguage));
+            m_SelectedLanguage = (int)plugin.Config.TeleporterLanguage;
         }
 
         protected override void DrawUi() {
@@ -47,7 +47,7 @@ namespace TeleporterPlugin.Gui {
         }
 
         private void UpdateAetheryteList() {
-            if (DateTime.UtcNow.Subtract(_lastAetheryteListUpdate).TotalMilliseconds < 5000)
+            if (DateTime.UtcNow.Subtract(m_LastAetheryteListUpdate).TotalMilliseconds < 5000)
                 return;
             var list = Plugin.Manager.AetheryteList.ToList();
             var mapList = new HashSet<string>();
@@ -56,9 +56,9 @@ namespace TeleporterPlugin.Gui {
                 if(locF == null) continue;
                 mapList.Add(locF.TerritoryName);
             }
-            _mapList = mapList.ToArray();
-            _aetheryteList = list.Select(a => a.Name).ToArray();
-            _lastAetheryteListUpdate = DateTime.UtcNow;
+            m_MapList = mapList.ToArray();
+            m_AetheryteList = list.Select(a => a.Name).ToArray();
+            m_LastAetheryteListUpdate = DateTime.UtcNow;
         }
 
         private void DrawGeneralSettings() {
@@ -83,10 +83,10 @@ namespace TeleporterPlugin.Gui {
                                  $"(default) Client = Game Language [{Plugin.Interface.ClientState.ClientLanguage}]");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(200);
-            if (ImGui.Combo("##hideLangSetting", ref _selectedLanguage, _languageList, _languageList.Length)) {
-                Config.TeleporterLanguage = (TeleporterLanguage)_selectedLanguage;
+            if (ImGui.Combo("##hideLangSetting", ref m_SelectedLanguage, m_LanguageList, m_LanguageList.Length)) {
+                Config.TeleporterLanguage = (TeleporterLanguage)m_SelectedLanguage;
                 Config.Save();
-                _lastAetheryteListUpdate = DateTime.MinValue;
+                m_LastAetheryteListUpdate = DateTime.MinValue;
             }
 
             if (ImGui.Checkbox("Skip Ticket Popup", ref Config.SkipTicketPopup)) Config.Save();
@@ -143,7 +143,7 @@ namespace TeleporterPlugin.Gui {
 
             ImGui.SameLine();
             if (ImGui.Button("Delete All"))
-                ImGui.OpenPopupContextItem("deleteallpopup", ImGuiPopupFlags.MouseButtonLeft);
+                ImGui.OpenPopupOnItemClick("deleteallpopup", ImGuiPopupFlags.MouseButtonLeft);
 
             if (ImGui.BeginPopup("deleteallpopup")) {
                 ImGui.TextColored(ColorRed, "Are you sure you want to delete ALL aliases?");
@@ -189,10 +189,10 @@ namespace TeleporterPlugin.Gui {
                         Config.Save();
                     ImGui.SameLine();
                     if (ImGui.BeginCombo($"##hidelabelAliasSelect{i}", "", ImGuiComboFlags.NoPreview)) {
-                        for (var a = 0; a < _aetheryteList.Length; a++) {
-                            var selected = alias.Aetheryte.Equals(_aetheryteList[a], StringComparison.OrdinalIgnoreCase);
-                            if (ImGui.Selectable(_aetheryteList[a], selected)) {
-                                alias.Aetheryte = _aetheryteList[a];
+                        for (var a = 0; a < m_AetheryteList.Length; a++) {
+                            var selected = alias.Aetheryte.Equals(m_AetheryteList[a], StringComparison.OrdinalIgnoreCase);
+                            if (ImGui.Selectable(m_AetheryteList[a], selected)) {
+                                alias.Aetheryte = m_AetheryteList[a];
                                 Config.Save();
                             }
                             if (selected) ImGui.SetItemDefaultFocus();
@@ -203,10 +203,10 @@ namespace TeleporterPlugin.Gui {
                         ImGui.SetTooltip("Aetheryte Names");
                     ImGui.SameLine();
                     if (ImGui.BeginCombo($"##hidelabelAliasSelectMap{i}", "", ImGuiComboFlags.NoPreview)) {
-                        for (var a = 0; a < _mapList.Length; a++) {
-                            var selected = alias.Aetheryte.Equals(_mapList[a], StringComparison.OrdinalIgnoreCase);
-                            if (ImGui.Selectable(_mapList[a], selected)) {
-                                alias.Aetheryte = _mapList[a];
+                        for (var a = 0; a < m_MapList.Length; a++) {
+                            var selected = alias.Aetheryte.Equals(m_MapList[a], StringComparison.OrdinalIgnoreCase);
+                            if (ImGui.Selectable(m_MapList[a], selected)) {
+                                alias.Aetheryte = m_MapList[a];
                                 Config.Save();
                             }
                             if (selected) ImGui.SetItemDefaultFocus();

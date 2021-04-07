@@ -45,7 +45,6 @@ namespace TeleporterPlugin {
                 HelpMessage = "<mapname> - Teleport to <mapname> using Aetheryte Tickets if possible"
             });
             Gui = new PluginUi(this);
-            //Interface.Framework.Gui.Chat.OnChatMessage += Gui.LinksWindow.ChatOnChatMessage;
         }
         
         public void Log(string message) {
@@ -72,12 +71,7 @@ namespace TeleporterPlugin {
                 Gui.AetherGateWindow.Visible = !Gui.AetherGateWindow.Visible;
                 return;
             }
-
-            //if (args.Equals("links", StringComparison.OrdinalIgnoreCase)) {
-            //    Gui.LinksWindow.Visible = !Gui.LinksWindow.Visible;
-            //    return;
-            //}
-
+            
             if (args.Equals("config", StringComparison.OrdinalIgnoreCase)) {
                 Gui.ConfigWindow.Visible = !Gui.ConfigWindow.Visible;
                 return;
@@ -122,8 +116,7 @@ namespace TeleporterPlugin {
                     Manager.TeleportTicket(locationString, Config.SkipTicketPopup, matchPartial, useMap);
                     break;
                 default:
-                    LogError($"Unable to get a valid type for Teleport: '{string.Join(" ", args)}'");
-                    break;
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -142,7 +135,6 @@ namespace TeleporterPlugin {
                 $"{command} debug - Show Debug Window\n" +
 #endif
                 $"{command} config - Show Settings Window\n" +
-                //$"{command} links - Show Maplink Tracker\n" +
                 $"{command} quick - Show AetherGate Window\n" +
                 "/tp <name> - Teleport to <name> (/tp New Gridania)\n" +
                 "/tpt <name> - Teleport using Aetheryte tickets if possible\n" +
@@ -152,8 +144,6 @@ namespace TeleporterPlugin {
         }
 
         public void Dispose() {
-            //if(Gui != null)
-                //Interface.Framework.Gui.Chat.OnChatMessage -= Gui.LinksWindow.ChatOnChatMessage;
             Interface.CommandManager.RemoveHandler("/tp");
             Interface.CommandManager.RemoveHandler("/tpt");
             Interface.CommandManager.RemoveHandler("/tpm");

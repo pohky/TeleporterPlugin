@@ -1,95 +1,55 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AA92A957-0734-4688-B143-05EE38CE2A40}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TeleporterPlugin</RootNamespace>
-    <AssemblyName>TeleporterPlugin</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Dalamud">
-      <HintPath>..\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGui.NET.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGuiScene.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Lumina.Excel">
-      <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.Excel.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Gui\ConfigurationWindow.cs" />
-    <Compile Include="Gui\DebugWindow.cs" />
-    <Compile Include="Gui\AetherGateWindow.cs" />
-    <Compile Include="Gui\LinksWindow.cs" />
-    <Compile Include="Gui\Window.cs" />
-    <Compile Include="Managers\AetheryteDataManager.cs" />
-    <Compile Include="Objects\AetheryteLocation.cs" />
-    <Compile Include="Objects\MapLink.cs" />
-    <Compile Include="Objects\TeleportButton.cs" />
-    <Compile Include="Objects\TeleportAlias.cs" />
-    <Compile Include="Objects\TeleporterLanguage.cs" />
-    <Compile Include="Objects\TeleportType.cs" />
-    <Compile Include="PluginUi.cs" />
-    <Compile Include="Configuration.cs" />
-    <Compile Include="TeleporterPlugin.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Objects\TeleportLocation.cs" />
-    <Compile Include="Managers\TeleportManager.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="TeleporterPlugin.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <TargetFramework>net472</TargetFramework>
+  <LangVersion>9.0</LangVersion>
+  <AssemblyTitle>TeleporterPlugin</AssemblyTitle>
+  <Product>TeleporterPlugin</Product>
+  <Copyright>Copyright © Pohky 2020</Copyright>
+  <AssemblyVersion>1.0.1.8</AssemblyVersion>
+  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+ </PropertyGroup>
+ <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <DebugType>full</DebugType>
+ </PropertyGroup>
+ <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <DebugType>pdbonly</DebugType>
+ </PropertyGroup>
+ <ItemGroup>
+  <Reference Include="Dalamud">
+   <HintPath>..\Dalamud\Dalamud\bin\Debug\Dalamud.dll</HintPath>
+   <Private>False</Private>
+  </Reference>
+  <Reference Include="ImGui.NET">
+   <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGui.NET.dll</HintPath>
+   <Private>False</Private>
+  </Reference>
+  <Reference Include="ImGuiScene">
+   <HintPath>..\Dalamud\Dalamud\bin\Debug\ImGuiScene.dll</HintPath>
+   <Private>False</Private>
+  </Reference>
+  <Reference Include="Lumina">
+   <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.dll</HintPath>
+   <Private>False</Private>
+  </Reference>
+  <Reference Include="Lumina.Excel">
+   <HintPath>..\Dalamud\Dalamud\bin\Debug\Lumina.Excel.dll</HintPath>
+   <Private>False</Private>
+  </Reference>
+ </ItemGroup>
+ <ItemGroup>
+  <None Include="TeleporterPlugin.json">
+   <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+ </ItemGroup>
+ <ItemGroup>
+  <PackageReference Include="DalamudPackager" Version="1.2.1" />
+ </ItemGroup>
+ <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <DalamudPackager
+   ProjectDir="$(ProjectDir)"
+   OutputPath="$(OutputPath)"
+   AssemblyName="$(AssemblyName)"
+   MakeZip="true" />
+ </Target>
 </Project>

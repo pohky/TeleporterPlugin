@@ -17,12 +17,8 @@ namespace TeleporterPlugin {
         public bool ShowTooltips = true;
         public bool UseFloatingWindow;
         public int GilThreshold = 999;
-        public List<TeleportAlias> AliasList = new List<TeleportAlias>();
-        public List<TeleportButton> TeleportButtons = new List<TeleportButton>();
-
-        public bool LinkTrackerAutoPop = true;
-        public bool LinkTrackerAlwaysActive = false;
-        public bool LinkTrackerUseTickets = true;
+        public List<TeleportAlias> AliasList = new();
+        public List<TeleportButton> TeleportButtons = new();
 
         public bool PrintMessage = true;
         public bool PrintError = true;

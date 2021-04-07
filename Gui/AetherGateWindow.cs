@@ -6,11 +6,11 @@ using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Gui {
     public class AetherGateWindow : Window<TeleporterPlugin> {
-        private string _buttonTextBuffer = string.Empty;
-        private string _buttonAetheryteBuffer = string.Empty;
-        private bool _buttonUseTickets = true;
-        private DateTime _lastAetheryteListUpdate = DateTime.MinValue;
-        private string[] _aetheryteList = new string[0];
+        private string m_ButtonTextBuffer = string.Empty;
+        private string m_ButtonAetheryteBuffer = string.Empty;
+        private bool m_ButtonUseTickets = true;
+        private DateTime m_LastAetheryteListUpdate = DateTime.MinValue;
+        private string[] m_AetheryteList = new string[0];
 
         public Configuration Config => Plugin.Config;
         public override bool Visible {
@@ -34,37 +34,37 @@ namespace TeleporterPlugin.Gui {
                     ImGui.TextUnformatted("Name:");
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(200);
-                    ImGui.InputText("##hideBtnAddText", ref _buttonTextBuffer, 256);
+                    ImGui.InputText("##hideBtnAddText", ref m_ButtonTextBuffer, 256);
                     ImGui.TextUnformatted("Aetheryte:");
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(180);
-                    ImGui.InputText("##hideBtnAddAetheryte", ref _buttonAetheryteBuffer, 256);
+                    ImGui.InputText("##hideBtnAddAetheryte", ref m_ButtonAetheryteBuffer, 256);
                     ImGui.SameLine();
                     UpdateAetheryteList();
                     if (ImGui.BeginCombo("##hideAddSelectAetheryte", "", ImGuiComboFlags.NoPreview)) {
-                        for (var i = 0; i < _aetheryteList.Length; i++)
-                            if (ImGui.Selectable(_aetheryteList[i]))
-                                _buttonAetheryteBuffer = _aetheryteList[i];
+                        for (var i = 0; i < m_AetheryteList.Length; i++)
+                            if (ImGui.Selectable(m_AetheryteList[i]))
+                                m_ButtonAetheryteBuffer = m_AetheryteList[i];
                         ImGui.EndCombo();
                     }
 
-                    ImGui.Checkbox("Use Tickets", ref _buttonUseTickets);
+                    ImGui.Checkbox("Use Tickets", ref m_ButtonUseTickets);
                     if (ImGui.Button("Add")) {
-                        if (!string.IsNullOrEmpty(_buttonTextBuffer) && !string.IsNullOrEmpty(_buttonAetheryteBuffer)) {
-                            Config.TeleportButtons.Add(new TeleportButton(_buttonTextBuffer, _buttonAetheryteBuffer, _buttonUseTickets));
+                        if (!string.IsNullOrEmpty(m_ButtonTextBuffer) && !string.IsNullOrEmpty(m_ButtonAetheryteBuffer)) {
+                            Config.TeleportButtons.Add(new TeleportButton(m_ButtonTextBuffer, m_ButtonAetheryteBuffer, m_ButtonUseTickets));
                             Config.Save();
                         }
 
                         ImGui.CloseCurrentPopup();
-                        _buttonTextBuffer = string.Empty;
-                        _buttonAetheryteBuffer = string.Empty;
+                        m_ButtonTextBuffer = string.Empty;
+                        m_ButtonAetheryteBuffer = string.Empty;
                     }
 
                     ImGui.SameLine();
                     if (ImGui.Button("Cancel")) {
                         ImGui.CloseCurrentPopup();
-                        _buttonTextBuffer = string.Empty;
-                        _buttonAetheryteBuffer = string.Empty;
+                        m_ButtonTextBuffer = string.Empty;
+                        m_ButtonAetheryteBuffer = string.Empty;
                     }
 
                     ImGui.EndPopup();
@@ -101,9 +101,9 @@ namespace TeleporterPlugin.Gui {
                         ImGui.SameLine();
                         UpdateAetheryteList();
                         if (ImGui.BeginCombo($"##hideEditSelectAetheryte{i}", "", ImGuiComboFlags.NoPreview)) {
-                            for (var o = 0; o < _aetheryteList.Length; o++)
-                                if (ImGui.Selectable(_aetheryteList[o])) {
-                                    button.Aetheryte = _aetheryteList[o];
+                            for (var o = 0; o < m_AetheryteList.Length; o++)
+                                if (ImGui.Selectable(m_AetheryteList[o])) {
+                                    button.Aetheryte = m_AetheryteList[o];
                                     Config.Save();
                                 }
 
@@ -123,8 +123,7 @@ namespace TeleporterPlugin.Gui {
                         ImGui.EndPopup();
                     }
 
-                    //ImGui.OpenPopupOnItemClick($"##editButton{i}", 1);
-                    ImGui.OpenPopupContextItem($"##editButton{i}", ImGuiPopupFlags.MouseButtonRight);
+                    ImGui.OpenPopupOnItemClick($"##editButton{i}", ImGuiPopupFlags.MouseButtonRight);
                 }
 
                 var buttSizeX = ImGui.CalcTextSize("+").X + 2 * style.FramePadding.X;
@@ -142,10 +141,10 @@ namespace TeleporterPlugin.Gui {
         }
 
         private void UpdateAetheryteList() {
-            if (DateTime.UtcNow.Subtract(_lastAetheryteListUpdate).TotalMilliseconds < 1000)
+            if (DateTime.UtcNow.Subtract(m_LastAetheryteListUpdate).TotalMilliseconds < 1000)
                 return;
-            _aetheryteList = Plugin.Manager.AetheryteList.Select(a => a.Name).ToArray();
-            _lastAetheryteListUpdate = DateTime.UtcNow;
+            m_AetheryteList = Plugin.Manager.AetheryteList.Select(a => a.Name).ToArray();
+            m_LastAetheryteListUpdate = DateTime.UtcNow;
         }
     }
 }
