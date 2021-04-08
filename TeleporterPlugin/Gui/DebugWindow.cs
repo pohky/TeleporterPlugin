@@ -35,13 +35,13 @@ namespace TeleporterPlugin.Gui {
                 }
 
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport"))
+                if (ImGui.Button("Teleport") && dbg_selected < dbg_locationList.Count)
                     Plugin.Manager.Teleport(dbg_locationList[dbg_selected].Name, true);
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport (Ticket)"))
+                if (ImGui.Button("Teleport (Ticket)") && dbg_selected < dbg_locationList.Count)
                     Plugin.Manager.TeleportTicket(dbg_locationList[dbg_selected].Name, true, true);
                 ImGui.SameLine();
-                if (ImGui.Button("Teleport (Ticket + Popup)"))
+                if (ImGui.Button("Teleport (Ticket + Popup)") && dbg_selected < dbg_locationList.Count)
                     Plugin.Manager.TeleportTicket(dbg_locationList[dbg_selected].Name, false, true);
 
                 ImGui.SameLine();
