@@ -110,9 +110,11 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.Checkbox("Enable AetherGate", ref Config.UseFloatingWindow))
                 Config.Save();
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Show a Window with customizable Buttons to quickly Teleport around.\n" +
+                ImGui.SetTooltip("[This will get removed in future versions. QoL Bar Plugin does a better job.]\n" +
+                                 "Show a Window with customizable Buttons to quickly Teleport around.\n" +
                                  "Rightclick on the Window or click the + Button to add a new Button\n" +
                                  "Rightlick on any Button to Edit or Delete it");
+
             if (ImGui.Checkbox("Show Teleporter Messages in Chat", ref Config.PrintMessage))
                 Config.Save();
         }

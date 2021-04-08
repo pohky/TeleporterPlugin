@@ -107,16 +107,11 @@ namespace TeleporterPlugin {
                     if (location.GilCost > Config.GilThreshold)
                         type = TeleportType.Ticket;
             }
-            
-            switch (type) {
-                case TeleportType.Direct:
-                    Manager.Teleport(locationString, matchPartial, useMap);
-                    break;
-                case TeleportType.Ticket:
-                    Manager.TeleportTicket(locationString, Config.SkipTicketPopup, matchPartial, useMap);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+
+            if (type == TeleportType.Ticket) {
+                Manager.TeleportTicket(locationString, Config.SkipTicketPopup, matchPartial, useMap);
+            } else {
+                Manager.Teleport(locationString, matchPartial, useMap);
             }
         }
 
@@ -135,7 +130,7 @@ namespace TeleporterPlugin {
                 "/tp debug - Show Debug Window\n" +
 #endif
                 "/tp config - Show Settings Window\n" +
-                "/tp quick - Show AetherGate Window\n" +
+                "/tp quick - Show AetherGate Window [Will get removed in future versions]\n" +
                 "/tp <name> - Teleport to <name> (/tp New Gridania)\n" +
                 "/tpt <name> - Teleport using Aetheryte tickets if possible\n" +
                 "/tpm <mapname> - Teleport to <mapname> (/tpm The Peaks)\n" +
