@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dalamud;
 using Dalamud.Configuration;
 using Dalamud.Plugin;
 using TeleporterPlugin.Objects;
@@ -9,30 +10,28 @@ namespace TeleporterPlugin {
     public class Configuration : IPluginConfiguration {
         public int Version { get; set; } = 0;
 
-        public TeleporterLanguage TeleporterLanguage = TeleporterLanguage.Client;
+        public ClientLanguage Language = ClientLanguage.English;
         public bool SkipTicketPopup;
         public bool UseGilThreshold;
         public bool AllowPartialMatch = true;
         public bool AllowPartialAlias = false;
         public bool ShowTooltips = true;
-        public bool UseFloatingWindow;
         public int GilThreshold = 999;
         public List<TeleportAlias> AliasList = new();
-        public List<TeleportButton> TeleportButtons = new();
 
         public bool PrintMessage = true;
         public bool PrintError = true;
 
         #region Init and Save
         
-        [NonSerialized] private DalamudPluginInterface _pluginInterface;
+        [NonSerialized] private DalamudPluginInterface m_PluginInterface;
 
         public void Initialize(DalamudPluginInterface pluginInterface) {
-            _pluginInterface = pluginInterface;
+            m_PluginInterface = pluginInterface;
         }
 
         public void Save() {
-            _pluginInterface.SavePluginConfig(this);
+            m_PluginInterface.SavePluginConfig(this);
         }
 
         #endregion

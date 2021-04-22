@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
 using TeleporterPlugin.Objects;
@@ -9,7 +10,7 @@ using TeleporterPlugin.Objects;
 //TODO BUG Fix Estate TP if not on Home World
 
 namespace TeleporterPlugin.Gui {
-    public class ConfigurationWindow : Window<TeleporterPlugin> {
+    public class ConfigurationWindow : Window {
         private static readonly Vector4 ColorRed = new(255, 0, 0, 255);
         private readonly string[] m_LanguageList;
         private int m_SelectedLanguage;
@@ -20,12 +21,12 @@ namespace TeleporterPlugin.Gui {
         public Configuration Config => Plugin.Config;
 
         public ConfigurationWindow(TeleporterPlugin plugin) : base(plugin) {
-            m_LanguageList = Enum.GetNames(typeof(TeleporterLanguage));
-            m_SelectedLanguage = (int)plugin.Config.TeleporterLanguage;
+            m_LanguageList = new HashSet<string>{$"{plugin.Interface.ClientState.ClientLanguage}", $"{ClientLanguage.English}"}.ToArray();
+            m_SelectedLanguage = m_LanguageList[0] == $"{plugin.Config.Language}" || m_LanguageList.Length == 1 ? 0 : 1;
         }
 
         protected override void DrawUi() {
-            ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.Appearing);
+            ImGui.SetNextWindowSize(new Vector2(530, 450), ImGuiCond.FirstUseEver);
             ImGui.SetNextWindowSizeConstraints(new Vector2(300, 300), new Vector2(float.MaxValue, float.MaxValue));
             if (!ImGui.Begin($"{Plugin.Name} Config", ref WindowVisible, ImGuiWindowFlags.NoScrollWithMouse)) {
                 ImGui.End();
@@ -52,7 +53,7 @@ namespace TeleporterPlugin.Gui {
             var list = Plugin.Manager.AetheryteList.ToList();
             var mapList = new HashSet<string>();
             foreach (var location in list) {
-                var locF = AetheryteDataManager.GetAetheryteLocationsByTerritoryId(location.ZoneId, Plugin.Language).FirstOrDefault();
+                var locF = AetheryteDataManager.GetAetheryteLocationsByTerritoryId(location.ZoneId, Plugin.Config.Language).FirstOrDefault();
                 if(locF == null) continue;
                 mapList.Add(locF.TerritoryName);
             }
@@ -79,12 +80,11 @@ namespace TeleporterPlugin.Gui {
 
             ImGui.TextUnformatted("Language:");
             if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("Change the Language used for Aetheryte Names.\n" +
-                                 $"(default) Client = Game Language [{Plugin.Interface.ClientState.ClientLanguage}]");
+                ImGui.SetTooltip("Change the Language used for Aetheryte and Map Names.");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(200);
             if (ImGui.Combo("##hideLangSetting", ref m_SelectedLanguage, m_LanguageList, m_LanguageList.Length)) {
-                Config.TeleporterLanguage = (TeleporterLanguage)m_SelectedLanguage;
+                Config.Language = (ClientLanguage)Enum.Parse(typeof(ClientLanguage), $"{m_LanguageList[m_SelectedLanguage]}");
                 Config.Save();
                 m_LastAetheryteListUpdate = DateTime.MinValue;
             }
@@ -96,7 +96,7 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.Checkbox("Use Tickets if Gil Price is above:", ref Config.UseGilThreshold)) Config.Save();
             if (Config.ShowTooltips && ImGui.IsItemHovered())
                 ImGui.SetTooltip("Attempt to use Aetheryte Tickets if the Teleport cost is greater than this value.\n" +
-                                 "Applies to '/tp'.\n" +
+                                 "Applies to all Teleporter Commands.\n" +
                                  "e.g.: '/tp Kugane' will attempt to use a ticket if the price is above the set value as if '/tpt Kugane' was used");
 
             ImGui.SameLine();
@@ -106,14 +106,6 @@ namespace TeleporterPlugin.Gui {
                 if (Config.GilThreshold > 999_999_999) Config.GilThreshold = 999_999_999;
                 Config.Save();
             }
-
-            if (ImGui.Checkbox("Enable AetherGate", ref Config.UseFloatingWindow))
-                Config.Save();
-            if (Plugin.Config.ShowTooltips && ImGui.IsItemHovered())
-                ImGui.SetTooltip("[This will get removed in future versions. QoL Bar Plugin does a better job.]\n" +
-                                 "Show a Window with customizable Buttons to quickly Teleport around.\n" +
-                                 "Rightclick on the Window or click the + Button to add a new Button\n" +
-                                 "Rightlick on any Button to Edit or Delete it");
 
             if (ImGui.Checkbox("Show Teleporter Messages in Chat", ref Config.PrintMessage))
                 Config.Save();

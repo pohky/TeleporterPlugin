@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Numerics;
 using ImGuiNET;
 using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Gui {
-    public class DebugWindow : Window<TeleporterPlugin> {
+    public class DebugWindow : Window {
         private int dbg_selected;
         private readonly List<TeleportLocation> dbg_locationList = new();
-
-        private readonly string[] m_LanguageList;
-        private int m_SelectedLanguage;
-
-        public DebugWindow(TeleporterPlugin plugin) : base(plugin) {
-            m_LanguageList = Enum.GetNames(typeof(TeleporterLanguage));
-            m_SelectedLanguage = (int)plugin.Config.TeleporterLanguage;
-        }
+        
+        public DebugWindow(TeleporterPlugin plugin) : base(plugin) { }
 
         protected override void DrawUi() {
             var windowSize = new Vector2(450, 315);
@@ -25,13 +18,11 @@ namespace TeleporterPlugin.Gui {
                 ImGui.TextUnformatted($"AetheryteList: {Plugin.Manager.AetheryteListAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"TeleportStatus: {Plugin.Manager.TeleportStatusAddress.ToInt64():X8}");
                 ImGui.TextUnformatted($"ItemCountStaticArg: {Plugin.Manager.ItemCountStaticArgAddress.ToInt64():X8}");
+
                 ImGui.Separator();
                 if (ImGui.Button("GetList")) {
-                    var lang = Plugin.Config.TeleporterLanguage;
-                    Plugin.Config.TeleporterLanguage = (TeleporterLanguage)m_SelectedLanguage;
                     dbg_locationList.Clear();
                     dbg_locationList.AddRange(Plugin.Manager.AetheryteList);
-                    Plugin.Config.TeleporterLanguage = lang;
                 }
 
                 ImGui.SameLine();
@@ -43,10 +34,6 @@ namespace TeleporterPlugin.Gui {
                 ImGui.SameLine();
                 if (ImGui.Button("Teleport (Ticket + Popup)") && dbg_selected < dbg_locationList.Count)
                     Plugin.Manager.TeleportTicket(dbg_locationList[dbg_selected].Name, false, true);
-
-                ImGui.SameLine();
-                ImGui.SetNextItemWidth(150);
-                ImGui.Combo("##dbgLangSetting", ref m_SelectedLanguage, m_LanguageList, m_LanguageList.Length);
 
                 ImGui.BeginChild("##scrollingregion");
                 ImGui.Columns(7, "##listbox");

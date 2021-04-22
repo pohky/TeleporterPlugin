@@ -8,37 +8,50 @@
   <AssemblyVersion>1.0.1.8</AssemblyVersion>
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
  </PropertyGroup>
+
+ <PropertyGroup>
+  <GitHubDir>$(USERPROFILE)\Documents\GitHub\Dalamud\bin</GitHubDir>
+  <DalamudDir>$(APPDATA)\XIVLauncher\addon\Hooks\dev</DalamudDir>
+  <DevDir>$(DalamudDir)</DevDir>
+ </PropertyGroup>
+
  <ItemGroup>
   <Reference Include="Dalamud">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Dalamud.dll</HintPath>
+   <HintPath Condition="Exists($(DevDir))">$(DevDir)\Dalamud.dll</HintPath>
+   <HintPath Condition="!Exists($(DevDir))">$(DalamudDir)\Dalamud.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="ImGui.NET">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGui.NET.dll</HintPath>
+   <HintPath Condition="Exists($(DevDir))">$(DevDir)\ImGui.NET.dll</HintPath>
+   <HintPath Condition="!Exists($(DevDir))">$(DalamudDir)\ImGui.NET.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="ImGuiScene">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGuiScene.dll</HintPath>
+   <HintPath Condition="Exists($(DevDir))">$(DevDir)\ImGuiScene.dll</HintPath>
+   <HintPath Condition="!Exists($(DevDir))">$(DalamudDir)\ImGuiScene.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="Lumina">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.dll</HintPath>
+   <HintPath Condition="Exists($(DevDir))">$(DevDir)\Lumina.dll</HintPath>
+   <HintPath Condition="!Exists($(DevDir))">$(DalamudDir)\Lumina.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="Lumina.Excel">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.Excel.dll</HintPath>
+   <HintPath Condition="Exists($(DevDir))">$(DevDir)\Lumina.Excel.dll</HintPath>
+   <HintPath Condition="!Exists($(DevDir))">$(DalamudDir)\Lumina.Excel.dll</HintPath>
    <Private>False</Private>
   </Reference>
  </ItemGroup>
+
  <ItemGroup>
   <PackageReference Include="DalamudPackager" Version="1.2.1" />
  </ItemGroup>
+
  <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
-  <DalamudPackager
-   ProjectDir="$(ProjectDir)"
-   OutputPath="$(OutputPath)"
-   AssemblyName="$(AssemblyName)"
-   MakeZip="true" />
+  <!-- ReSharper disable once UnknownTask -->
+  <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" MakeZip="true" />
  </Target>
+
 </Project>

@@ -57,7 +57,7 @@ namespace TeleporterPlugin.Managers {
             var aetheryteSheet = plugin.Data.GetExcelSheet<Aetheryte>();
             var territorySheet = plugin.Data.GetExcelSheet<TerritoryType>();
             
-            foreach (ClientLanguage language in Enum.GetValues(typeof(ClientLanguage))) {
+            foreach (var language in new HashSet<ClientLanguage>{plugin.ClientState.ClientLanguage, ClientLanguage.English}) {
                 var addonSheet = plugin.Data.GetExcelSheet<Addon>(language);
                 m_ApartmentNames[language] = addonSheet.GetRow(6760).Text.ToString();
 

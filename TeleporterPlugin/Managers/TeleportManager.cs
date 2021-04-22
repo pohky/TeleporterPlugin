@@ -8,13 +8,9 @@ using TeleporterPlugin.Objects;
 
 namespace TeleporterPlugin.Managers {
     public class TeleportManager : IDisposable {
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate IntPtr GetAvalibleLocationListDelegate(IntPtr locationsPtr, uint arg2);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void SendCommandDelegate(uint cmd, uint aetheryteId, bool useTicket, uint subIndex, uint arg5);
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate bool TryTeleportWithTicketDelegate(IntPtr tpStatusPtr, uint aetheryteId, byte subIndex);
-        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
         private delegate int GetItemCountDelegate(IntPtr arg1, uint itemId, uint arg3, uint arg4, uint arg5, uint arg6);
 
         private GetAvalibleLocationListDelegate m_GetAvalibleLocationList;
@@ -74,7 +70,7 @@ namespace TeleporterPlugin.Managers {
             try {
                 var mapName = "";
                 if (useMapName) {
-                    var aetheryteLocation = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, m_Plugin.Language, matchPartial).FirstOrDefault();
+                    var aetheryteLocation = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, m_Plugin.Config.Language, matchPartial).FirstOrDefault();
                     var name = aetheryteLocation?.Name;
                     mapName = aetheryteLocation?.TerritoryName;
                     if (name == null) {
@@ -104,7 +100,7 @@ namespace TeleporterPlugin.Managers {
                 m_TpTicketHook?.Disable();
                 var mapName = "";
                 if (useMapName) {
-                    var aetheryteLocation = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, m_Plugin.Language, matchPartial).FirstOrDefault();
+                    var aetheryteLocation = AetheryteDataManager.GetAetheryteLocationsByTerritoryName(aetheryteName, m_Plugin.Config.Language, matchPartial).FirstOrDefault();
                     var name = aetheryteLocation?.Name;
                     mapName = aetheryteLocation?.TerritoryName;
                     if (name == null) {
@@ -170,7 +166,7 @@ namespace TeleporterPlugin.Managers {
             var end = Marshal.ReadIntPtr(ptr, 8);
             var size = Marshal.SizeOf<TeleportLocationStruct>();
             var count = (int)((end.ToInt64() - start.ToInt64()) / size);
-            var language = m_Plugin.Language;
+            var language = m_Plugin.Config.Language;
             for (var i = 0; i < count; i++) {
                 var data = Marshal.PtrToStructure<TeleportLocationStruct>(start + i * size);
                 var name = AetheryteDataManager.GetAetheryteName(data, language);

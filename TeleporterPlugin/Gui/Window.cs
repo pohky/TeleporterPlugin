@@ -1,16 +1,14 @@
-﻿using Dalamud.Plugin;
-
-namespace TeleporterPlugin.Gui {
-    public abstract class Window<T> where T : IDalamudPlugin {
+﻿namespace TeleporterPlugin.Gui {
+    public abstract class Window {
         protected bool WindowVisible;
         public virtual bool Visible {
             get => WindowVisible;
             set => WindowVisible = value;
         }
 
-        protected T Plugin { get; }
+        protected TeleporterPlugin Plugin { get; }
 
-        protected Window(T plugin) {
+        protected Window(TeleporterPlugin plugin) {
             Plugin = plugin;
         }
 
