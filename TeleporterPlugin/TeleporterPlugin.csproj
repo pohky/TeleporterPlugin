@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-  <TargetFramework>net472</TargetFramework>
+  <TargetFramework>net5.0-windows</TargetFramework>
   <LangVersion>9.0</LangVersion>
   <AssemblyTitle>TeleporterPlugin</AssemblyTitle>
   <Product>TeleporterPlugin</Product>
@@ -12,22 +12,27 @@
  <ItemGroup>
   <Reference Include="Dalamud">
    <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Dalamud.dll</HintPath>
+    <HintPath>$(AppData)\XIVLauncher\Addon\Hooks\dev\Dalamud.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="ImGui.NET">
    <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGui.NET.dll</HintPath>
+   <HintPath>$(AppData)\XIVLauncher\Addon\Hooks\dev\ImGui.NET.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="ImGuiScene">
    <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGuiScene.dll</HintPath>
+   <HintPath>$(AppData)\XIVLauncher\Addon\Hooks\dev\ImGuiScene.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="Lumina">
    <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.dll</HintPath>
+   <HintPath>$(AppData)\XIVLauncher\Addon\Hooks\dev\Lumina.dll</HintPath>
    <Private>False</Private>
   </Reference>
   <Reference Include="Lumina.Excel">
    <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.Excel.dll</HintPath>
+   <HintPath>$(AppData)\XIVLauncher\Addon\Hooks\dev\Lumina.Excel.dll</HintPath>
    <Private>False</Private>
   </Reference>
  </ItemGroup>
@@ -40,5 +45,6 @@
    OutputPath="$(OutputPath)"
    AssemblyName="$(AssemblyName)"
    MakeZip="true" />
- </Target>
+     <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" MakeZip="true" />
+</Target>
 </Project>
