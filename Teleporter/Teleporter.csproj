@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <TargetFramework>net5-windows</TargetFramework>
+  <PlatformTarget>x64</PlatformTarget>
+  <Nullable>enable</Nullable>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  <DebugType>Full</DebugType>
+  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  <AssemblyVersion>2.0.0.0</AssemblyVersion>
+ </PropertyGroup>
+
+ <PropertyGroup>
+  <Dalamud>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</Dalamud>
+  <DevDir>$(APPDATA)\XIVLauncher\devPlugins\$(AssemblyName)</DevDir>
+ </PropertyGroup>
+
+ <Target Name="DevCopy" AfterTargets="Build" Condition="$(Configuration) == 'Debug'">
+  <ItemGroup>
+   <CpySourceFiles Include="$(OutputPath)\$(AssemblyName).*" />
+  </ItemGroup>
+  <Message Text="Copy files to $(DevDir)." Importance="High" />
+  <Copy DestinationFolder="$(DevDir)" SourceFiles="@(CpySourceFiles)" />
+ </Target>
+
+ <Target Name="DevClean" AfterTargets="Clean" Condition="$(Configuration) == 'Debug'">
+  <Message Text="Cleaning files from $(DevDir)." Importance="High" />
+  <RemoveDir Directories="$(DevDir)" />
+ </Target>
+
+ <ItemGroup>
+  <Content Include="Teleporter.json" CopyToOutputDirectory="Always" />
+
+  <Reference Include="Dalamud" HintPath="$(Dalamud)Dalamud.dll" Private="False" />
+  <Reference Include="ImGui.NET" HintPath="$(Dalamud)ImGui.NET.dll" Private="False" />
+  <Reference Include="Lumina" HintPath="$(Dalamud)Lumina.dll" Private="False" />
+  <Reference Include="Lumina.Excel" HintPath="$(Dalamud)Lumina.Excel.dll" Private="False" />
+  <Reference Include="FFXIVClientStructs" HintPath="$(Dalamud)FFXIVClientStructs.dll" Private="False" />
+ </ItemGroup>
+
+ <ItemGroup>
+   <Folder Include="Gui\" />
+ </ItemGroup>
+</Project>
