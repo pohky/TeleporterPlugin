@@ -33,21 +33,10 @@ namespace Teleporter.Gui {
                         ImGui.EndTabItem();
                     }
 
-                    if (ImGui.BeginTabItem("Debug")) {
-                        DrawDebugTab();
-                        ImGui.EndTabItem();
-                    }
-
                     ImGui.EndTabBar();
                 }
             } finally {
                 ImGui.End();
-            }
-        }
-
-        private static void DrawDebugTab() {
-            foreach (var kv in AetheryteManager.TerritoryNames) {
-                ImGui.TextUnformatted($"[{kv.Key}] {kv.Value}");
             }
         }
 
