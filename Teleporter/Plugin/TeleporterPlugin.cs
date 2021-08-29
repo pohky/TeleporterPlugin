@@ -29,7 +29,6 @@ namespace Teleporter.Plugin {
             Config = Configuration.Load();
             PluginInterface.UiBuilder.Draw += OnDraw;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUi;
-            ConfigWindow.Enabled = true;
         }
         
         public static void LogChat(string message, bool error = false) {
