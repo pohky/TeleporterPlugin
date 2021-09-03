@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Dalamud.Interface;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
 using TeleporterPlugin.Plugin;
@@ -47,18 +48,6 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.Checkbox("Show Error Messages", ref TeleporterPluginMain.Config.ChatError)) 
                 TeleporterPluginMain.Config.Save();
 
-            if(ImGui.Checkbox("*Hide Ticket Popup", ref TeleporterPluginMain.Config.SkipTicketPopup))
-                TeleporterPluginMain.Config.Save();
-
-            if (ImGui.Checkbox("*Only use Tickets if Cost is above", ref TeleporterPluginMain.Config.UseGilThreshold))
-                TeleporterPluginMain.Config.Save();
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(100);
-            if (ImGui.InputInt("Gil", ref TeleporterPluginMain.Config.GilThreshold))
-                TeleporterPluginMain.Config.Save();
-
-            ImGui.TextDisabled("*This also applies when using the Teleport Window and Map");
-
             ImGui.AlignTextToFramePadding();
             ImGui.TextUnformatted("Allow Partial Match:");
             ImGui.SameLine();
@@ -68,8 +57,37 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.Checkbox("Alias", ref TeleporterPluginMain.Config.AllowPartialAlias))
                 TeleporterPluginMain.Config.Save();
 
-            if(ImGui.Checkbox("Grand Company Ticket Teleport (/tp gc)", ref TeleporterPluginMain.Config.EnableGrandCompany))
+            if (ImGui.Checkbox("*Hide Ticket Popup", ref TeleporterPluginMain.Config.SkipTicketPopup))
                 TeleporterPluginMain.Config.Save();
+
+            if (ImGui.Checkbox("*Only use Tickets if Cost is above", ref TeleporterPluginMain.Config.UseGilThreshold))
+                TeleporterPluginMain.Config.Save();
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(100 * ImGuiHelpers.GlobalScale);
+            if (ImGui.InputInt("Gil", ref TeleporterPluginMain.Config.GilThreshold))
+                TeleporterPluginMain.Config.Save();
+
+            ImGui.TextDisabled("*This also applies when using the Teleport Window and Map");
+            ImGui.Separator();
+            if(ImGui.Checkbox("Grand Company Ticket Teleport", ref TeleporterPluginMain.Config.EnableGrandCompany))
+                TeleporterPluginMain.Config.Save();
+            if (TeleporterPluginMain.Config.EnableGrandCompany) {
+                ImGui.SameLine();
+                ImGui.TextUnformatted(" /tp");
+                ImGui.SetNextItemWidth(80);
+                ImGui.SameLine();
+                ImGui.InputText("##GcAlias", ref TeleporterPluginMain.Config.GrandCompanyAlias, 512);
+            }
+
+            if (ImGui.Checkbox("Eternity Ring Teleport", ref TeleporterPluginMain.Config.EnableEternityRing))
+                TeleporterPluginMain.Config.Save();
+            if (TeleporterPluginMain.Config.EnableEternityRing) {
+                ImGui.SameLine();
+                ImGui.TextUnformatted(" /tp");
+                ImGui.SetNextItemWidth(80);
+                ImGui.SameLine();
+                ImGui.InputText("##RingAlias", ref TeleporterPluginMain.Config.EternityRingAlias, 512);
+            }
         }
         
         private static void DrawAliasTab() {

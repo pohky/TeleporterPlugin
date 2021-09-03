@@ -18,7 +18,11 @@ namespace TeleporterPlugin {
         public int GilThreshold = 999;
 
         public bool EnableGrandCompany = false;
+        public string GrandCompanyAlias = "gc";
 
+        public bool EnableEternityRing = false;
+        public string EternityRingAlias = "ring";
+        
         public List<TeleportAlias> AliasList = new();
 
         #region OldConfig

@@ -59,7 +59,7 @@ namespace TeleporterPlugin.Managers {
                 AetheryteManager.UpdateAvailableAetherytes();
 
             if (TeleporterPluginMain.Config.EnableGrandCompany &&
-                arg.Trim().Equals("gc", StringComparison.OrdinalIgnoreCase)) {
+                arg.Trim().Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
                     var gc = *(byte*)TeleporterPluginMain.Address.GrandCompanyAddress;
                     if (gc == 0) return;
@@ -71,9 +71,30 @@ namespace TeleporterPlugin.Managers {
                     };
                     if (gcTicket == 0)
                         return;
+
+                    var cnt = TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), gcTicket, 0, 0, 0, 0);
+                    if (cnt < 1) {
+                        TeleporterPluginMain.LogChat("You do not have the required item.", true);
+                        return;
+                    }
+
                     var gcName = TryGetGrandCompanyName(gc, out var name) ? name : $"GrandCompany{gc}";
                     TeleporterPluginMain.LogChat($"Teleporting to {gcName}.");
                     ActionManager.Instance()->UseAction(ActionType.Item, gcTicket);
+                    return;
+                }
+            }
+
+            if (TeleporterPluginMain.Config.EnableEternityRing 
+                && arg.Trim().Equals(TeleporterPluginMain.Config.EternityRingAlias, StringComparison.OrdinalIgnoreCase)) {
+                unsafe {
+                    var cnt = TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), 8575, 0, 1, 1, 0);
+                    if (cnt < 1) {
+                        TeleporterPluginMain.LogChat("You do not have the Eternity Ring.", true);
+                        return;
+                    }
+                    TeleporterPluginMain.LogChat("Teleporting to Partner.");
+                    ActionManager.Instance()->UseAction(ActionType.Item, 8575);
                     return;
                 }
             }
