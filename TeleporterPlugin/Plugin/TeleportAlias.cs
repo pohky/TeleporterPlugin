@@ -1,8 +1,8 @@
 ﻿using System;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Teleporter.Managers;
+using TeleporterPlugin.Managers;
 
-namespace Teleporter.Plugin {
+namespace TeleporterPlugin.Plugin {
     public class TeleportAlias : IEquatable<TeleportAlias>, IEquatable<TeleportInfo> {
         public string Alias = string.Empty;
         public string Aetheryte = string.Empty;

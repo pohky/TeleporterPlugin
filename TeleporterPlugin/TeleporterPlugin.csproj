@@ -18,7 +18,7 @@
   <PackageReference Include="DalamudPackager" Version="2.1.2" />
 
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
-  <Content Include="Teleporter.json" CopyToOutputDirectory="Always" />
+  <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
 
   <Reference Include="Dalamud" HintPath="$(Dalamud)Dalamud.dll" Private="False" />
   <Reference Include="ImGui.NET" HintPath="$(Dalamud)ImGui.NET.dll" Private="False" />

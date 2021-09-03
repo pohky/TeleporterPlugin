@@ -2,7 +2,7 @@
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.Game;
 
-namespace Teleporter.Plugin {
+namespace TeleporterPlugin.Plugin {
     public class TeleporterAddressResolver : BaseAddressResolver {
         public nint BaseAddress { get; private set; }
         public nint ExecuteCommandAddress { get; private set; }

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using Dalamud.Configuration;
-using Teleporter.Managers;
+using TeleporterPlugin.Managers;
+using TeleporterPlugin.Plugin;
 
-namespace Teleporter.Plugin {
+namespace TeleporterPlugin {
     public class Configuration : IPluginConfiguration {
         public int Version { get; set; } = 2;
 
@@ -18,14 +19,20 @@ namespace Teleporter.Plugin {
 
         public List<TeleportAlias> AliasList = new();
 
+        #region OldConfig
+
+        public int TeleporterLanguage = 4;
+
+        #endregion
+
         #region Helper
-        
+
         public void Save() {
-            TeleporterPlugin.PluginInterface?.SavePluginConfig(this);
+            TeleporterPluginMain.PluginInterface.SavePluginConfig(this);
         }
 
         public static Configuration Load() {
-            var config = TeleporterPlugin.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            var config = TeleporterPluginMain.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             foreach (var alias in config.AliasList)
                 alias.Aetheryte = AetheryteManager.GetAetheryteName(alias);
             return config;

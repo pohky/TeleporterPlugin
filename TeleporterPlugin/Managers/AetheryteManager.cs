@@ -6,9 +6,9 @@ using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Lumina.Excel.GeneratedSheets;
-using Teleporter.Plugin;
+using TeleporterPlugin.Plugin;
 
-namespace Teleporter.Managers {
+namespace TeleporterPlugin.Managers {
     public static class AetheryteManager {
         public static readonly Dictionary<uint, string> AetheryteNames = new(150);
         public static readonly Dictionary<uint, string> TerritoryNames = new(80);
@@ -18,8 +18,8 @@ namespace Teleporter.Managers {
         public static readonly List<TeleportInfo> AvailableAetherytes = new(80);
         
         public static void Load() {
-            SetupAetherytes(AetheryteNames, TeleporterPlugin.ClientState.ClientLanguage);
-            SetupMaps(TerritoryNames, TeleporterPlugin.ClientState.ClientLanguage);
+            SetupAetherytes(AetheryteNames, Plugin.TeleporterPluginMain.ClientState.ClientLanguage);
+            SetupMaps(TerritoryNames, Plugin.TeleporterPluginMain.ClientState.ClientLanguage);
         }
 
         public static bool TryFindAetheryteByMapName(string mapName, bool matchPartial, out TeleportInfo info) {
@@ -64,7 +64,7 @@ namespace Teleporter.Managers {
         }
 
         public static unsafe bool UpdateAvailableAetherytes() {
-            if (TeleporterPlugin.ClientState.LocalPlayer == null)
+            if (Plugin.TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return false;
             try {
                 var tp = Telepo.Instance();
@@ -109,26 +109,26 @@ namespace Teleporter.Managers {
         }
 
         private static void SetupAetherytes(IDictionary<uint, string> dict, ClientLanguage language) {
-            var sheet = TeleporterPlugin.Data.GetExcelSheet<Aetheryte>(language)!;
+            var sheet = Plugin.TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
                 var name = row.PlaceName.Value?.Name?.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
-                name = TeleporterPlugin.PluginInterface.Sanitizer.Sanitize(name);
+                name = Plugin.TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
                 dict[row.RowId] = name;
             }
         }
 
         private static void SetupMaps(IDictionary<uint, string> dict, ClientLanguage language) {
-            var sheet = TeleporterPlugin.Data.GetExcelSheet<Aetheryte>(language)!;
+            var sheet = Plugin.TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
                 var name = row.Territory.Value?.PlaceName.Value?.Name?.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
                 if (row is not { IsAetheryte: true }) continue;
-                name = TeleporterPlugin.PluginInterface.Sanitizer.Sanitize(name);
+                name = Plugin.TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
                 dict[row.RowId] = name;
             }
         }

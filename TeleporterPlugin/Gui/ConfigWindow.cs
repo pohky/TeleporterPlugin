@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using ImGuiNET;
-using Teleporter.Managers;
-using Teleporter.Plugin;
+using TeleporterPlugin.Managers;
+using TeleporterPlugin.Plugin;
 
-namespace Teleporter.Gui {
+namespace TeleporterPlugin.Gui {
     public static class ConfigWindow {
         private static bool m_Visible;
         public static bool Enabled {
@@ -41,32 +41,32 @@ namespace Teleporter.Gui {
         }
 
         private static void DrawGeneralTab() {
-            if (ImGui.Checkbox("Show Chat Messages", ref TeleporterPlugin.Config.ChatMessage))
-                TeleporterPlugin.Config.Save();
+            if (ImGui.Checkbox("Show Chat Messages", ref Plugin.TeleporterPluginMain.Config.ChatMessage))
+                Plugin.TeleporterPluginMain.Config.Save();
             ImGui.SameLine();
-            if (ImGui.Checkbox("Show Error Messages", ref TeleporterPlugin.Config.ChatError)) 
-                TeleporterPlugin.Config.Save();
+            if (ImGui.Checkbox("Show Error Messages", ref Plugin.TeleporterPluginMain.Config.ChatError)) 
+                Plugin.TeleporterPluginMain.Config.Save();
 
-            if(ImGui.Checkbox("Hide Ticket Popup", ref TeleporterPlugin.Config.SkipTicketPopup))
-                TeleporterPlugin.Config.Save();
+            if(ImGui.Checkbox("Hide Ticket Popup", ref Plugin.TeleporterPluginMain.Config.SkipTicketPopup))
+                Plugin.TeleporterPluginMain.Config.Save();
 
-            if (ImGui.Checkbox("Only use Tickets if Cost is above", ref TeleporterPlugin.Config.UseGilThreshold))
-                TeleporterPlugin.Config.Save();
+            if (ImGui.Checkbox("Only use Tickets if Cost is above", ref Plugin.TeleporterPluginMain.Config.UseGilThreshold))
+                Plugin.TeleporterPluginMain.Config.Save();
             ImGui.SameLine();
             ImGui.SetNextItemWidth(100);
-            if (ImGui.InputInt("Gil", ref TeleporterPlugin.Config.GilThreshold))
-                TeleporterPlugin.Config.Save();
+            if (ImGui.InputInt("Gil", ref Plugin.TeleporterPluginMain.Config.GilThreshold))
+                Plugin.TeleporterPluginMain.Config.Save();
 
             ImGui.TextDisabled("*This also applies when using the Teleport Window and Map");
 
             ImGui.AlignTextToFramePadding();
             ImGui.TextUnformatted("Allow Partial Match:");
             ImGui.SameLine();
-            if (ImGui.Checkbox("Aetheryte", ref TeleporterPlugin.Config.AllowPartialName))
-                TeleporterPlugin.Config.Save();
+            if (ImGui.Checkbox("Aetheryte", ref Plugin.TeleporterPluginMain.Config.AllowPartialName))
+                Plugin.TeleporterPluginMain.Config.Save();
             ImGui.SameLine();
-            if (ImGui.Checkbox("Alias", ref TeleporterPlugin.Config.AllowPartialAlias))
-                TeleporterPlugin.Config.Save();
+            if (ImGui.Checkbox("Alias", ref Plugin.TeleporterPluginMain.Config.AllowPartialAlias))
+                Plugin.TeleporterPluginMain.Config.Save();
         }
         
         private static void DrawAliasTab() {
@@ -77,17 +77,17 @@ namespace Teleporter.Gui {
             ImGui.TableSetupColumn("##aliasBtns", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableHeadersRow();
 
-            var list = TeleporterPlugin.Config.AliasList.ToList();
+            var list = Plugin.TeleporterPluginMain.Config.AliasList.ToList();
             for (var i = -1; i < list.Count; i++) {
                 var alias = i < 0 ? m_DummyAlias : list[i];
                 ImGui.TableNextColumn();
                 ImGui.SetNextItemWidth(-1);
                 if (ImGui.InputText($"##alias{i}Input", ref alias.Alias, 512, ImGuiInputTextFlags.EnterReturnsTrue)) {
                     if (i == -1) {
-                        TeleporterPlugin.Config.AliasList.Insert(0, alias);
+                        Plugin.TeleporterPluginMain.Config.AliasList.Insert(0, alias);
                         m_DummyAlias = new TeleportAlias();
                     }
-                    TeleporterPlugin.Config.Save();
+                    Plugin.TeleporterPluginMain.Config.Save();
                 }
                 ImGui.TableNextColumn();
                 ImGui.TextUnformatted(alias.Aetheryte);
@@ -104,11 +104,11 @@ namespace Teleporter.Gui {
                             if (ImGui.Selectable(name, selected)) {
                                 alias.Update(info);
                                 if (i == -1) {
-                                    TeleporterPlugin.Config.AliasList.Insert(0, alias);
+                                    Plugin.TeleporterPluginMain.Config.AliasList.Insert(0, alias);
                                     m_DummyAlias = new TeleportAlias();
                                 }
 
-                                TeleporterPlugin.Config.Save();
+                                Plugin.TeleporterPluginMain.Config.Save();
                             }
 
                             if (selected) ImGui.SetItemDefaultFocus();
@@ -120,8 +120,8 @@ namespace Teleporter.Gui {
 
                 ImGui.SameLine();
                 if (i != -1 && ImGui.Button($" X ##alias{i}delete")) {
-                    TeleporterPlugin.Config.AliasList.Remove(alias);
-                    TeleporterPlugin.Config.Save();
+                    Plugin.TeleporterPluginMain.Config.AliasList.Remove(alias);
+                    Plugin.TeleporterPluginMain.Config.Save();
                 }
             }
             ImGui.EndTable();
