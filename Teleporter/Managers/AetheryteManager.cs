@@ -73,6 +73,7 @@ namespace Teleporter.Managers {
                 AvailableAetherytes.Clear();
                 for (ulong i = 0; i < tp->TeleportList.Size(); i++)
                     AvailableAetherytes.Add(tp->TeleportList.Get(i));
+                return true;
             } catch(Exception ex) {
                 AvailableAetherytes.Clear();
                 PluginLog.LogError(ex, "Error while Updating the Aetheryte List");

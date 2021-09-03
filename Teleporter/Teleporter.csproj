@@ -12,23 +12,16 @@
 
  <PropertyGroup>
   <Dalamud>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</Dalamud>
-  <DevDir>$(APPDATA)\XIVLauncher\devPlugins\$(AssemblyName)</DevDir>
  </PropertyGroup>
 
- <Target Name="DevCopy" AfterTargets="Build" Condition="$(Configuration) == 'Debug'">
-  <ItemGroup>
-   <CpySourceFiles Include="$(OutputPath)\$(AssemblyName).*" />
-  </ItemGroup>
-  <Message Text="Copy files to $(DevDir)." Importance="High" />
-  <Copy DestinationFolder="$(DevDir)" SourceFiles="@(CpySourceFiles)" />
- </Target>
-
- <Target Name="DevClean" AfterTargets="Clean" Condition="$(Configuration) == 'Debug'">
-  <Message Text="Cleaning files from $(DevDir)." Importance="High" />
-  <RemoveDir Directories="$(DevDir)" />
- </Target>
+ <ItemGroup>
+   <None Remove="images\icon.png" />
+ </ItemGroup>
 
  <ItemGroup>
+  <PackageReference Include="DalamudPackager" Version="2.1.2" />
+
+  <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="Teleporter.json" CopyToOutputDirectory="Always" />
 
   <Reference Include="Dalamud" HintPath="$(Dalamud)Dalamud.dll" Private="False" />
@@ -38,7 +31,7 @@
   <Reference Include="FFXIVClientStructs" HintPath="$(Dalamud)FFXIVClientStructs.dll" Private="False" />
  </ItemGroup>
 
- <ItemGroup>
-   <Folder Include="Gui\" />
- </ItemGroup>
+ <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" MakeZip="true" />
+ </Target>
 </Project>

@@ -6,7 +6,7 @@ using Teleporter.Plugin;
 
 namespace Teleporter.Gui {
     public static class ConfigWindow {
-        private static bool m_Visible = true;
+        private static bool m_Visible;
         public static bool Enabled {
             get => m_Visible;
             set {
@@ -56,6 +56,8 @@ namespace Teleporter.Gui {
             ImGui.SetNextItemWidth(100);
             if (ImGui.InputInt("Gil", ref TeleporterPlugin.Config.GilThreshold))
                 TeleporterPlugin.Config.Save();
+
+            ImGui.TextDisabled("*This also applies when using the Teleport Window and Map");
 
             ImGui.AlignTextToFramePadding();
             ImGui.TextUnformatted("Allow Partial Match:");

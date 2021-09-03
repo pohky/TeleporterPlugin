@@ -24,6 +24,8 @@ namespace Teleporter.Managers {
 
             var useTicket = true;
             if (TeleporterPlugin.Config.UseGilThreshold) {
+                if (AetheryteManager.AvailableAetherytes.Count == 0)
+                    AetheryteManager.UpdateAvailableAetherytes();
                 for (ulong i = 0; i < suti->Telepo->TeleportList.Size(); i++) {
                     var info = suti->Telepo->TeleportList.Get(i);
                     if (info.AetheryteId == aetheryteId && info.SubIndex == subIndex) {
