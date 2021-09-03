@@ -15,10 +15,6 @@
  </PropertyGroup>
 
  <ItemGroup>
-   <None Remove="images\icon.png" />
- </ItemGroup>
-
- <ItemGroup>
   <PackageReference Include="DalamudPackager" Version="2.1.2" />
 
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
