@@ -7,6 +7,7 @@ namespace TeleporterPlugin.Plugin {
         public nint BaseAddress { get; private set; }
         public nint ExecuteCommandAddress { get; private set; }
         public nint GetInventoryItemCountAddress { get; private set; }
+        public nint GrandCompanyAddress { get; private set; }
 
         public unsafe delegate* unmanaged <InventoryManager*, uint, byte, byte, byte, short, int> GetInventoryItemCount;
         public unsafe delegate* unmanaged <uint, uint, uint, uint, uint, void> ExecuteCommand;
@@ -18,6 +19,8 @@ namespace TeleporterPlugin.Plugin {
 
             GetInventoryItemCountAddress = scanner.ScanText("E8 ?? ?? ?? ?? 8B 53 F1");
             GetInventoryItemCount = (delegate* unmanaged <InventoryManager*, uint, byte, byte, byte, short, int>)GetInventoryItemCountAddress;
+
+            GrandCompanyAddress = scanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 44 88 64 24");
         }
     }
 }

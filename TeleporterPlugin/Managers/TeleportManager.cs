@@ -23,13 +23,13 @@ namespace TeleporterPlugin.Managers {
                 return false;
 
             var useTicket = true;
-            if (Plugin.TeleporterPluginMain.Config.UseGilThreshold) {
+            if (TeleporterPluginMain.Config.UseGilThreshold) {
                 if (AetheryteManager.AvailableAetherytes.Count == 0)
                     AetheryteManager.UpdateAvailableAetherytes();
                 for (ulong i = 0; i < suti->Telepo->TeleportList.Size(); i++) {
                     var info = suti->Telepo->TeleportList.Get(i);
                     if (info.AetheryteId == aetheryteId && info.SubIndex == subIndex) {
-                        useTicket = info.GilCost > Plugin.TeleporterPluginMain.Config.GilThreshold;
+                        useTicket = info.GilCost > TeleporterPluginMain.Config.GilThreshold;
                         break;
                     }
                 }
@@ -37,27 +37,27 @@ namespace TeleporterPlugin.Managers {
 
             if (!useTicket) return false;
 
-            if (!Plugin.TeleporterPluginMain.Config.SkipTicketPopup)
+            if (!TeleporterPluginMain.Config.SkipTicketPopup)
                 return m_TicketHook.Original(suti, aetheryteId, subIndex);
 
-            Plugin.TeleporterPluginMain.Address.ExecuteCommand(0xCA, aetheryteId, 1, subIndex, 0);
+            TeleporterPluginMain.Address.ExecuteCommand(0xCA, aetheryteId, 1, subIndex, 0);
             return true;
         }
 
         private static int GetAetheryteTicketCount() {
-            if (Plugin.TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return 0;
-            return Plugin.TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), 7569, 0, 0, 1, 0);
+            return TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), 7569, 0, 0, 1, 0);
         }
 
         public static bool Teleport(TeleportInfo info) {
-            if (Plugin.TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return false;
             return Telepo.Instance()->Teleport(info.AetheryteId, info.SubIndex);
         }
 
         public static bool Teleport(TeleportAlias alias) {
-            if (Plugin.TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return false;
             return Telepo.Instance()->Teleport(alias.AetheryteId, alias.SubIndex);
         }

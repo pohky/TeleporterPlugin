@@ -17,6 +17,8 @@ namespace TeleporterPlugin {
         public bool UseGilThreshold = false;
         public int GilThreshold = 999;
 
+        public bool EnableGrandCompany = false;
+
         public List<TeleportAlias> AliasList = new();
 
         #region OldConfig

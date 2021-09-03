@@ -18,8 +18,8 @@ namespace TeleporterPlugin.Managers {
         public static readonly List<TeleportInfo> AvailableAetherytes = new(80);
         
         public static void Load() {
-            SetupAetherytes(AetheryteNames, Plugin.TeleporterPluginMain.ClientState.ClientLanguage);
-            SetupMaps(TerritoryNames, Plugin.TeleporterPluginMain.ClientState.ClientLanguage);
+            SetupAetherytes(AetheryteNames, TeleporterPluginMain.ClientState.ClientLanguage);
+            SetupMaps(TerritoryNames, TeleporterPluginMain.ClientState.ClientLanguage);
         }
 
         public static bool TryFindAetheryteByMapName(string mapName, bool matchPartial, out TeleportInfo info) {
@@ -64,7 +64,7 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static unsafe bool UpdateAvailableAetherytes() {
-            if (Plugin.TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return false;
             try {
                 var tp = Telepo.Instance();
@@ -109,26 +109,26 @@ namespace TeleporterPlugin.Managers {
         }
 
         private static void SetupAetherytes(IDictionary<uint, string> dict, ClientLanguage language) {
-            var sheet = Plugin.TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
+            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
                 var name = row.PlaceName.Value?.Name?.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
-                name = Plugin.TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
+                name = TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
                 dict[row.RowId] = name;
             }
         }
 
         private static void SetupMaps(IDictionary<uint, string> dict, ClientLanguage language) {
-            var sheet = Plugin.TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
+            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
                 var name = row.Territory.Value?.PlaceName.Value?.Name?.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
                 if (row is not { IsAetheryte: true }) continue;
-                name = Plugin.TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
+                name = TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
                 dict[row.RowId] = name;
             }
         }
