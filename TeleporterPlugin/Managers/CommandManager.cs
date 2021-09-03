@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Dalamud.Game.Command;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -21,51 +23,85 @@ namespace TeleporterPlugin.Managers {
             Plugin.TeleporterPluginMain.Commands.RemoveHandler("/tpm");
         }
 
-        private static void CommandHandlerMaps(string cmd, string arg) {
-            if (string.IsNullOrEmpty(arg)) {
+        internal static bool TeleportByAetheryteId(uint id) {
+            if (AetheryteManager.AvailableAetherytes.Count == 0
+             && !AetheryteManager.UpdateAvailableAetherytes())
+                return false;
+
+            var info = AetheryteManager.AvailableAetherytes.Cast<TeleportInfo?>()
+               .First(a => a!.Value.AetheryteId == id);
+            if (info == null)
+                return false;
+
+            return TeleportManager.Teleport(info.Value);
+        }
+
+        internal static bool TeleportByTerritoryId(uint id) {
+            if (AetheryteManager.AvailableAetherytes.Count == 0
+              && !AetheryteManager.UpdateAvailableAetherytes())
+                return false;
+
+            var info = AetheryteManager.AvailableAetherytes.Cast<TeleportInfo?>()
+               .First(a => a!.Value.TerritoryId == id);
+            if (info == null)
+                return false;
+
+            return TeleportManager.Teleport(info.Value);
+        }
+
+        internal static bool TeleportByName(string name) {
+            if (string.IsNullOrEmpty(name)) {
                 Plugin.TeleporterPluginMain.OnOpenConfigUi();
-                return;
+                return false;
             }
 
             if (AetheryteManager.AvailableAetherytes.Count == 0)
                 AetheryteManager.UpdateAvailableAetherytes();
 
-            arg = CleanArgument(arg);
+            name = CleanArgument(name);
 
-            if (!AetheryteManager.TryFindAetheryteByMapName(arg, Plugin.TeleporterPluginMain.Config.AllowPartialName, out var info)) {
-                Plugin.TeleporterPluginMain.LogChat($"No attuned Aetheryte found for '{arg}'.", true);
-                return;
+            if (!AetheryteManager.TryFindAetheryteByMapName(name, Plugin.TeleporterPluginMain.Config.AllowPartialName, out var info)) {
+                Plugin.TeleporterPluginMain.LogChat($"No attuned Aetheryte found for '{name}'.", true);
+                return false;
             }
 
             Plugin.TeleporterPluginMain.LogChat($"Teleporting to {AetheryteManager.GetAetheryteName(info)}.");
             TeleportManager.Teleport(info);
+            return true;
         }
 
-        private static void CommandHandler(string cmd, string arg) {
-            if (string.IsNullOrEmpty(arg)) {
+        internal static bool TeleportByMapName(string name) {
+            if (string.IsNullOrEmpty(name)) {
                 Plugin.TeleporterPluginMain.OnOpenConfigUi();
-                return;
+                return false;
             }
 
             if (AetheryteManager.AvailableAetherytes.Count == 0)
                 AetheryteManager.UpdateAvailableAetherytes();
 
-            if (TryFindAliasByName(arg, Plugin.TeleporterPluginMain.Config.AllowPartialName, out var alias)) {
+            name = CleanArgument(name);
+
+            if (TryFindAliasByName(name, Plugin.TeleporterPluginMain.Config.AllowPartialName, out var alias)) {
                 Plugin.TeleporterPluginMain.LogChat($"Teleporting to {AetheryteManager.GetAetheryteName(alias)}.");
                 TeleportManager.Teleport(alias);
-                return;
+                return false;
             }
 
-            arg = CleanArgument(arg);
-
-            if (!AetheryteManager.TryFindAetheryteByName(arg, Plugin.TeleporterPluginMain.Config.AllowPartialName, out var info)) {
-                Plugin.TeleporterPluginMain.LogChat($"No attuned Aetheryte found for '{arg}'.", true);
-                return;
+            if (!AetheryteManager.TryFindAetheryteByName(name, Plugin.TeleporterPluginMain.Config.AllowPartialName, out var info)) {
+                Plugin.TeleporterPluginMain.LogChat($"No attuned Aetheryte found for '{name}'.", true);
+                return false;
             }
 
             Plugin.TeleporterPluginMain.LogChat($"Teleporting to {AetheryteManager.GetAetheryteName(info)}.");
             TeleportManager.Teleport(info);
+            return true;
         }
+
+        private static void CommandHandlerMaps(string cmd, string arg)
+            => TeleportByMapName(arg);
+
+        private static void CommandHandler(string cmd, string arg)
+            => TeleportByName(arg);
 
         private static string CleanArgument(string arg) {
             //remove autotranslate arrows and double spaces

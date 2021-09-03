@@ -27,6 +27,8 @@ namespace TeleporterPlugin.Plugin {
         public static TeleporterAddressResolver Address { get; set; } = new();
         public static Configuration Config { get; set; } = new();
 
+        public readonly TeleporterIpc Ipc;
+
         public TeleporterPluginMain() {
             Address.Setup(SigScanner);
             AetheryteManager.Load();
@@ -39,6 +41,8 @@ namespace TeleporterPlugin.Plugin {
 
             PluginInterface.UiBuilder.Draw += OnDraw;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUi;
+
+            Ipc = new TeleporterIpc();
         }
         
         public static void LogChat(string message, bool error = false) {
@@ -116,6 +120,7 @@ namespace TeleporterPlugin.Plugin {
         }
 
         public void Dispose() {
+            Ipc.Dispose();
             Config.Save();
             TeleportManager.UnLoad();
             CommandManager.UnLoad();
