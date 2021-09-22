@@ -74,13 +74,13 @@ namespace TeleporterPlugin.Managers {
 
                     var cnt = TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), gcTicket, 0, 0, 0, 0);
                     if (cnt < 1) {
-                        TeleporterPluginMain.LogChat("You do not have the required item.", true);
+                        TeleporterPluginMain.LogChat("You do not have the required GC Tickets.", true);
                         return;
                     }
 
                     var gcName = TryGetGrandCompanyName(gc, out var name) ? name : $"GrandCompany{gc}";
                     TeleporterPluginMain.LogChat($"Teleporting to {gcName}.");
-                    ActionManager.Instance()->UseAction(ActionType.Item, gcTicket);
+                    ActionManager.Instance()->UseAction(ActionType.Item, gcTicket, 0xE000_0000, 65535);
                     return;
                 }
             }
@@ -94,7 +94,7 @@ namespace TeleporterPlugin.Managers {
                         return;
                     }
                     TeleporterPluginMain.LogChat("Teleporting to Partner.");
-                    ActionManager.Instance()->UseAction(ActionType.Item, 8575);
+                    ActionManager.Instance()->UseAction(ActionType.Item, 8575, 0xE000_0000, 65535);
                     return;
                 }
             }
