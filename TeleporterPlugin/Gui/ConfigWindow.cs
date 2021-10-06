@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
@@ -12,11 +13,13 @@ namespace TeleporterPlugin.Gui {
             get => m_Visible;
             set {
                 if (value) AetheryteManager.UpdateAvailableAetherytes();
+                m_AetheryteFilter = string.Empty;
                 m_Visible = value;
             }
         }
 
         private static TeleportAlias m_DummyAlias = new();
+        private static string m_AetheryteFilter = string.Empty;
 
         public static void Draw() {
             if(!m_Visible) return;
@@ -120,8 +123,12 @@ namespace TeleporterPlugin.Gui {
                         if (ImGui.Selectable("Click here to Update"))
                             AetheryteManager.UpdateAvailableAetherytes();
                     } else {
+                        ImGui.InputText("Search##aetheryteFilter", ref m_AetheryteFilter, 512);
                         foreach (var info in AetheryteManager.AvailableAetherytes) {
                             var name = AetheryteManager.GetAetheryteName(info);
+                            if (!string.IsNullOrEmpty(m_AetheryteFilter) && !name.Contains(m_AetheryteFilter, StringComparison.OrdinalIgnoreCase))
+                                continue;
+
                             var selected = alias.Aetheryte.Equals(name, StringComparison.OrdinalIgnoreCase);
                             if (ImGui.Selectable(name, selected)) {
                                 alias.Update(info);

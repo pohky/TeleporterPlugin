@@ -7,7 +7,7 @@
   <DebugType>Full</DebugType>
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-  <AssemblyVersion>2.0.0.4</AssemblyVersion>
+  <AssemblyVersion>2.0.0.6</AssemblyVersion>
  </PropertyGroup>
 
  <PropertyGroup>
@@ -26,8 +26,4 @@
   <Reference Include="Lumina.Excel" HintPath="$(Dalamud)Lumina.Excel.dll" Private="False" />
   <Reference Include="FFXIVClientStructs" HintPath="$(Dalamud)FFXIVClientStructs.dll" Private="False" />
  </ItemGroup>
-
- <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
-  <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" MakeZip="true" />
- </Target>
 </Project>

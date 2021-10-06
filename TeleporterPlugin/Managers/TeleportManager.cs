@@ -61,6 +61,14 @@ namespace TeleporterPlugin.Managers {
                     TeleporterPluginMain.LogChat(msg, true);
                 return false;
             }
+
+            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.Id != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.Id) {
+                if (AetheryteManager.IsHousingAetheryte(info.AetheryteId, info.Plot, info.Ward, info.SubIndex)) {
+                    TeleporterPluginMain.LogChat($"Unable to Teleport to {AetheryteManager.GetAetheryteName(info)} while visiting other Worlds.", true);
+                    return false;
+                }
+            }
+
             return Telepo.Instance()->Teleport(info.AetheryteId, info.SubIndex);
         }
 
@@ -73,6 +81,13 @@ namespace TeleporterPlugin.Managers {
                 if(!string.IsNullOrEmpty(msg))
                     TeleporterPluginMain.LogChat(msg, true);
                 return false;
+            }
+
+            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.Id != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.Id) {
+                if (AetheryteManager.IsHousingAetheryte(alias.AetheryteId, alias.Plot, alias.Ward, alias.SubIndex)) {
+                    TeleporterPluginMain.LogChat($"Unable to Teleport to {alias.Aetheryte} while visiting other Worlds.", true);
+                    return false;
+                }
             }
             return Telepo.Instance()->Teleport(alias.AetheryteId, alias.SubIndex);
         }

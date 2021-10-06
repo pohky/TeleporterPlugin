@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud;
 using Dalamud.Logging;
@@ -16,10 +17,19 @@ namespace TeleporterPlugin.Managers {
         private static string? m_AppartmentName;
 
         public static readonly List<TeleportInfo> AvailableAetherytes = new(80);
-        
+
+        private static uint[] m_CompanyEstateIds = { 0 };
+
         public static void Load() {
             SetupAetherytes(AetheryteNames, TeleporterPluginMain.ClientState.ClientLanguage);
             SetupMaps(TerritoryNames, TeleporterPluginMain.ClientState.ClientLanguage);
+            SetupEstateIds(out m_CompanyEstateIds);
+        }
+
+        public static bool IsHousingAetheryte(uint id, byte plot, byte ward, byte subId) {
+            if (plot != 0 || ward != 0 || subId != 0)
+                return true;
+            return m_CompanyEstateIds.Contains(id);
         }
 
         public static bool TryFindAetheryteByMapName(string mapName, bool matchPartial, out TeleportInfo info) {
@@ -106,6 +116,16 @@ namespace TeleporterPlugin.Managers {
             var tm = Framework.Instance()->GetUiModule()->GetRaptureTextModule();
             var sp = tm->FormatAddonText2(8519, ward, plot);
             return Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? $"SHARED_HOUSE_W{ward}_P{plot}";
+        }
+
+        private static void SetupEstateIds(out uint[] array) {
+            var list = new List<uint>(10);
+            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(ClientLanguage.English)!;
+            foreach (var aetheryte in sheet) {
+                if (aetheryte.PlaceName.Row == 1145)
+                    list.Add(aetheryte.RowId);
+            }
+            array = list.ToArray();
         }
 
         private static void SetupAetherytes(IDictionary<uint, string> dict, ClientLanguage language) {

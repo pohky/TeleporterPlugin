@@ -99,7 +99,7 @@ namespace TeleporterPlugin.Managers {
                 }
             }
 
-            if (TryFindAliasByName(arg, TeleporterPluginMain.Config.AllowPartialName, out var alias)) {
+            if (TryFindAliasByName(arg, TeleporterPluginMain.Config.AllowPartialAlias, out var alias)) {
                 TeleporterPluginMain.LogChat($"Teleporting to {AetheryteManager.GetAetheryteName(alias)}.");
                 TeleportManager.Teleport(alias);
                 return;
