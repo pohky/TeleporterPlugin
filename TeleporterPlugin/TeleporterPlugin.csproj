@@ -1,44 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-  <TargetFramework>net472</TargetFramework>
-  <LangVersion>9.0</LangVersion>
-  <AssemblyTitle>TeleporterPlugin</AssemblyTitle>
-  <Product>TeleporterPlugin</Product>
-  <Copyright>Copyright © Pohky 2020</Copyright>
-  <AssemblyVersion>1.0.1.8</AssemblyVersion>
+  <TargetFramework>net5-windows</TargetFramework>
+  <PlatformTarget>x64</PlatformTarget>
+  <Nullable>enable</Nullable>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  <DebugType>Full</DebugType>
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-  <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+  <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  <AssemblyVersion>2.0.0.6</AssemblyVersion>
  </PropertyGroup>
+
+ <PropertyGroup>
+  <Dalamud>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</Dalamud>
+ </PropertyGroup>
+
  <ItemGroup>
-  <Reference Include="Dalamud">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Dalamud.dll</HintPath>
-   <Private>False</Private>
-  </Reference>
-  <Reference Include="ImGui.NET">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGui.NET.dll</HintPath>
-   <Private>False</Private>
-  </Reference>
-  <Reference Include="ImGuiScene">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\ImGuiScene.dll</HintPath>
-   <Private>False</Private>
-  </Reference>
-  <Reference Include="Lumina">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.dll</HintPath>
-   <Private>False</Private>
-  </Reference>
-  <Reference Include="Lumina.Excel">
-   <HintPath>$(USERPROFILE)\Documents\GitHub\Dalamud\bin\Lumina.Excel.dll</HintPath>
-   <Private>False</Private>
-  </Reference>
+  <PackageReference Include="DalamudPackager" Version="2.1.2" />
+
+  <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
+  <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
+
+  <Reference Include="Dalamud" HintPath="$(Dalamud)Dalamud.dll" Private="False" />
+  <Reference Include="ImGui.NET" HintPath="$(Dalamud)ImGui.NET.dll" Private="False" />
+  <Reference Include="Lumina" HintPath="$(Dalamud)Lumina.dll" Private="False" />
+  <Reference Include="Lumina.Excel" HintPath="$(Dalamud)Lumina.Excel.dll" Private="False" />
+  <Reference Include="FFXIVClientStructs" HintPath="$(Dalamud)FFXIVClientStructs.dll" Private="False" />
  </ItemGroup>
- <ItemGroup>
-  <PackageReference Include="DalamudPackager" Version="1.2.1" />
- </ItemGroup>
- <Target Name="PackagePlugin" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
-  <DalamudPackager
-   ProjectDir="$(ProjectDir)"
-   OutputPath="$(OutputPath)"
-   AssemblyName="$(AssemblyName)"
-   MakeZip="true" />
- </Target>
 </Project>

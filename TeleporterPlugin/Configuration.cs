@@ -1,40 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Dalamud.Configuration;
-using Dalamud.Plugin;
-using TeleporterPlugin.Objects;
+using TeleporterPlugin.Managers;
+using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin {
-    [Serializable]
     public class Configuration : IPluginConfiguration {
-        public int Version { get; set; } = 0;
+        public int Version { get; set; } = 2;
 
-        public TeleporterLanguage TeleporterLanguage = TeleporterLanguage.Client;
-        public bool SkipTicketPopup;
-        public bool UseGilThreshold;
-        public bool AllowPartialMatch = true;
+        public bool AllowPartialName = true;
         public bool AllowPartialAlias = false;
-        public bool ShowTooltips = true;
-        public bool UseFloatingWindow;
+
+        public bool SkipTicketPopup = false;
+        public bool ChatMessage = true;
+        public bool ChatError = true;
+
+        public bool UseGilThreshold = false;
         public int GilThreshold = 999;
-        public List<TeleportAlias> AliasList = new();
-        public List<TeleportButton> TeleportButtons = new();
 
-        public bool PrintMessage = true;
-        public bool PrintError = true;
+        public bool EnableGrandCompany = false;
+        public string GrandCompanyAlias = "gc";
 
-        #region Init and Save
+        public bool EnableEternityRing = false;
+        public string EternityRingAlias = "ring";
         
-        [NonSerialized] private DalamudPluginInterface _pluginInterface;
+        public List<TeleportAlias> AliasList = new();
 
-        public void Initialize(DalamudPluginInterface pluginInterface) {
-            _pluginInterface = pluginInterface;
-        }
+        #region OldConfig
+
+        public int TeleporterLanguage = 4;
+
+        #endregion
+
+        #region Helper
 
         public void Save() {
-            _pluginInterface.SavePluginConfig(this);
+            TeleporterPluginMain.PluginInterface.SavePluginConfig(this);
         }
 
+        public static Configuration Load() {
+            var config = TeleporterPluginMain.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            foreach (var alias in config.AliasList)
+                alias.Aetheryte = AetheryteManager.GetAetheryteName(alias);
+            return config;
+        }
+        
         #endregion
     }
 }
