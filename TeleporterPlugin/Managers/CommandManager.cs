@@ -100,6 +100,10 @@ namespace TeleporterPlugin.Managers {
             }
 
             if (TryFindAliasByName(arg, TeleporterPluginMain.Config.AllowPartialAlias, out var alias)) {
+                if (alias.Aetheryte.Equals("NO_DATA", StringComparison.OrdinalIgnoreCase)) {
+                    TeleporterPluginMain.LogChat($"Invalid Alias: {alias.Alias} -> {alias.Aetheryte}", true);
+                    return;
+                }
                 TeleporterPluginMain.LogChat($"Teleporting to {AetheryteManager.GetAetheryteName(alias)}.");
                 TeleportManager.Teleport(alias);
                 return;
