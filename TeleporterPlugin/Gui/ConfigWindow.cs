@@ -50,9 +50,11 @@ namespace TeleporterPlugin.Gui {
             ImGui.SameLine();
             if (ImGui.Checkbox("Show Error Messages", ref TeleporterPluginMain.Config.ChatError)) 
                 TeleporterPluginMain.Config.Save();
-            if (ImGui.Checkbox("Use English Aetheryte Names", ref TeleporterPluginMain.Config.UseEnglish)) {
+            if (ImGui.Checkbox("Use English Aetheryte Names", ref TeleporterPluginMain.Config.UseEnglish))
                 AetheryteManager.Load();
-            }
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip("This does not apply to Estate Names (Appartment, Shared Estate etc.)");
+
             ImGui.AlignTextToFramePadding();
             ImGui.TextUnformatted("Allow Partial Match:");
             ImGui.SameLine();
