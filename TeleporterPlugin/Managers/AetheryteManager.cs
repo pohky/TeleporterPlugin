@@ -21,8 +21,9 @@ namespace TeleporterPlugin.Managers {
         private static uint[] m_CompanyEstateIds = { 0 };
 
         public static void Load() {
-            SetupAetherytes(AetheryteNames, TeleporterPluginMain.ClientState.ClientLanguage);
-            SetupMaps(TerritoryNames, TeleporterPluginMain.ClientState.ClientLanguage);
+            var lang = TeleporterPluginMain.Config.UseEnglish ? ClientLanguage.English : TeleporterPluginMain.ClientState.ClientLanguage;
+            SetupAetherytes(AetheryteNames, lang);
+            SetupMaps(TerritoryNames, lang);
             SetupEstateIds(out m_CompanyEstateIds);
         }
 
@@ -108,7 +109,8 @@ namespace TeleporterPlugin.Managers {
         private static unsafe string GetAppartmentName() {
             var tm = Framework.Instance()->GetUiModule()->GetRaptureTextModule();
             var sp = tm->GetAddonText(8518);
-            return Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? string.Empty;
+            var name = Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? string.Empty;
+            return TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
         }
 
         private static unsafe string GetSharedHouseName(int ward, int plot) {

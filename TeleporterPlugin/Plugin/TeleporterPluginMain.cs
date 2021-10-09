@@ -36,6 +36,9 @@ namespace TeleporterPlugin.Plugin {
             if (TryImportOldConfig(PluginInterface, out var configuration))
                 Config = configuration;
             else Config = Configuration.Load();
+            
+            if (Config.UseEnglish)
+                AetheryteManager.Load();
 
             PluginInterface.UiBuilder.Draw += OnDraw;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUi;

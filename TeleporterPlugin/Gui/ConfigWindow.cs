@@ -50,7 +50,9 @@ namespace TeleporterPlugin.Gui {
             ImGui.SameLine();
             if (ImGui.Checkbox("Show Error Messages", ref TeleporterPluginMain.Config.ChatError)) 
                 TeleporterPluginMain.Config.Save();
-
+            if (ImGui.Checkbox("Use English Aetheryte Names", ref TeleporterPluginMain.Config.UseEnglish)) {
+                AetheryteManager.Load();
+            }
             ImGui.AlignTextToFramePadding();
             ImGui.TextUnformatted("Allow Partial Match:");
             ImGui.SameLine();
@@ -70,7 +72,7 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.InputInt("Gil", ref TeleporterPluginMain.Config.GilThreshold))
                 TeleporterPluginMain.Config.Save();
 
-            ImGui.TextDisabled("*This also applies when using the Teleport Window and Map");
+            ImGui.TextDisabled("*This also applies when using the Teleport Window and Map (not the Friendlist)");
             ImGui.Separator();
             if(ImGui.Checkbox("Grand Company Ticket Teleport", ref TeleporterPluginMain.Config.EnableGrandCompany))
                 TeleporterPluginMain.Config.Save();

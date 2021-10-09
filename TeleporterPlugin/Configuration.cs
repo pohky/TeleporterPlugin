@@ -7,6 +7,8 @@ namespace TeleporterPlugin {
     public class Configuration : IPluginConfiguration {
         public int Version { get; set; } = 2;
 
+        public bool UseEnglish = false;
+
         public bool AllowPartialName = true;
         public bool AllowPartialAlias = false;
 
