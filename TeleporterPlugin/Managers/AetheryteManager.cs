@@ -18,19 +18,19 @@ namespace TeleporterPlugin.Managers {
 
         public static readonly List<TeleportInfo> AvailableAetherytes = new(80);
 
-        private static uint[] m_CompanyEstateIds = { 0 };
+        private static uint[] m_EstateIds = { 0 };
 
         public static void Load() {
             var lang = TeleporterPluginMain.Config.UseEnglish ? ClientLanguage.English : TeleporterPluginMain.ClientState.ClientLanguage;
             SetupAetherytes(AetheryteNames, lang);
             SetupMaps(TerritoryNames, lang);
-            SetupEstateIds(out m_CompanyEstateIds);
+            SetupEstateIds(out m_EstateIds);
         }
 
         public static bool IsHousingAetheryte(uint id, byte plot, byte ward, byte subId) {
             if (plot != 0 || ward != 0 || subId != 0)
                 return true;
-            return m_CompanyEstateIds.Contains(id);
+            return m_EstateIds.Contains(id);
         }
 
         public static bool TryFindAetheryteByMapName(string mapName, bool matchPartial, out TeleportInfo info) {
@@ -124,7 +124,7 @@ namespace TeleporterPlugin.Managers {
             var list = new List<uint>(10);
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(ClientLanguage.English)!;
             foreach (var aetheryte in sheet) {
-                if (aetheryte.PlaceName.Row == 1145)
+                if (aetheryte.PlaceName.Row is 1145 or 1160)
                     list.Add(aetheryte.RowId);
             }
             array = list.ToArray();
