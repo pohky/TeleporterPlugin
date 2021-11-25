@@ -10,8 +10,9 @@ namespace TeleporterPlugin.Managers {
             TeleporterPluginMain.Commands.RemoveHandler("/tp");
             TeleporterPluginMain.Commands.AddHandler("/tp", new CommandInfo(CommandHandler) {
                 ShowInHelp = true,
-                HelpMessage = "/tp <aetheryte name> - Teleport to aetheryte"
+                HelpMessage = "/tp <aetheryte name> - Teleport to aetheryte (use just '/tp' to open the Config)"
             });
+            TeleporterPluginMain.Commands.RemoveHandler("/tpm");
             TeleporterPluginMain.Commands.AddHandler("/tpm", new CommandInfo(CommandHandlerMaps) {
                 ShowInHelp = true,
                 HelpMessage = "/tpm <map name> - Teleport to map"
@@ -32,8 +33,7 @@ namespace TeleporterPlugin.Managers {
             if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return;
 
-            if (AetheryteManager.AvailableAetherytes.Count == 0)
-                AetheryteManager.UpdateAvailableAetherytes();
+            AetheryteManager.UpdateAvailableAetherytes();
 
             arg = CleanArgument(arg);
 
@@ -55,9 +55,8 @@ namespace TeleporterPlugin.Managers {
             if(TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return;
 
-            if (AetheryteManager.AvailableAetherytes.Count == 0)
-                AetheryteManager.UpdateAvailableAetherytes();
-
+            AetheryteManager.UpdateAvailableAetherytes();
+            
             if (TeleporterPluginMain.Config.EnableGrandCompany &&
                 arg.Trim().Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
