@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Numerics;
-using Dalamud.Interface;
 using ImGuiNET;
 using TeleporterPlugin.Managers;
 using TeleporterPlugin.Plugin;
@@ -64,17 +62,6 @@ namespace TeleporterPlugin.Gui {
             if (ImGui.Checkbox("Alias", ref TeleporterPluginMain.Config.AllowPartialAlias))
                 TeleporterPluginMain.Config.Save();
 
-            if (ImGui.Checkbox("*Hide Ticket Popup", ref TeleporterPluginMain.Config.SkipTicketPopup))
-                TeleporterPluginMain.Config.Save();
-
-            if (ImGui.Checkbox("*Only use Tickets if Cost is above", ref TeleporterPluginMain.Config.UseGilThreshold))
-                TeleporterPluginMain.Config.Save();
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(100 * ImGuiHelpers.GlobalScale);
-            if (ImGui.InputInt("Gil", ref TeleporterPluginMain.Config.GilThreshold))
-                TeleporterPluginMain.Config.Save();
-
-            ImGui.TextDisabled("*This also applies when using the Teleport Window and Map (not the Friendlist)");
             ImGui.Separator();
             if(ImGui.Checkbox("Grand Company Ticket Teleport", ref TeleporterPluginMain.Config.EnableGrandCompany))
                 TeleporterPluginMain.Config.Save();

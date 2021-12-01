@@ -47,6 +47,8 @@ namespace TeleporterPlugin.Managers {
         }
 
         private static void CommandHandler(string cmd, string arg) {
+            arg = CleanArgument(arg);
+
             if (string.IsNullOrEmpty(arg)) {
                 TeleporterPluginMain.OnOpenConfigUi();
                 return;
@@ -58,7 +60,7 @@ namespace TeleporterPlugin.Managers {
             AetheryteManager.UpdateAvailableAetherytes();
             
             if (TeleporterPluginMain.Config.EnableGrandCompany &&
-                arg.Trim().Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
+                arg.Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
                     var gc = *(byte*)TeleporterPluginMain.Address.GrandCompanyAddress;
                     if (gc == 0) return;
@@ -85,7 +87,7 @@ namespace TeleporterPlugin.Managers {
             }
 
             if (TeleporterPluginMain.Config.EnableEternityRing 
-                && arg.Trim().Equals(TeleporterPluginMain.Config.EternityRingAlias, StringComparison.OrdinalIgnoreCase)) {
+                && arg.Equals(TeleporterPluginMain.Config.EternityRingAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
                     var cnt = TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), 8575, 0, 1, 1, 0);
                     if (cnt < 1) {
@@ -93,7 +95,7 @@ namespace TeleporterPlugin.Managers {
                         return;
                     }
                     TeleporterPluginMain.LogChat("Teleporting to Partner.");
-                    ActionManager.Instance()->UseAction(ActionType.Item, 8575, 0xE000_0000, 65535);
+                    ActionManager.Instance()->UseAction(ActionType.Item, 8575, 0xE000_0000, ushort.MaxValue);
                     return;
                 }
             }
@@ -107,8 +109,6 @@ namespace TeleporterPlugin.Managers {
                 TeleportManager.Teleport(alias);
                 return;
             }
-
-            arg = CleanArgument(arg);
 
             if (!AetheryteManager.TryFindAetheryteByName(arg, TeleporterPluginMain.Config.AllowPartialName, out var info)) {
                 TeleporterPluginMain.LogChat($"No attuned Aetheryte found for '{arg}'.", true);

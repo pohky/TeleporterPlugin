@@ -12,12 +12,8 @@ namespace TeleporterPlugin {
         public bool AllowPartialName = true;
         public bool AllowPartialAlias = false;
 
-        public bool SkipTicketPopup = false;
         public bool ChatMessage = true;
         public bool ChatError = true;
-
-        public bool UseGilThreshold = false;
-        public int GilThreshold = 999;
 
         public bool EnableGrandCompany = false;
         public string GrandCompanyAlias = "gc";
@@ -26,12 +22,6 @@ namespace TeleporterPlugin {
         public string EternityRingAlias = "ring";
         
         public List<TeleportAlias> AliasList = new();
-
-        #region OldConfig
-
-        public int TeleporterLanguage = 4;
-
-        #endregion
 
         #region Helper
 
