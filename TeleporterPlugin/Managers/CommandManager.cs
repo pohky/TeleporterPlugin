@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.GeneratedSheets;
@@ -105,6 +106,7 @@ namespace TeleporterPlugin.Managers {
                     TeleporterPluginMain.LogChat($"Invalid Alias: {alias.Alias} -> {alias.Aetheryte}", true);
                     return;
                 }
+
                 TeleporterPluginMain.LogChat($"Teleporting to {AetheryteManager.GetAetheryteName(alias)}.");
                 TeleportManager.Teleport(alias);
                 return;
@@ -142,6 +144,8 @@ namespace TeleporterPlugin.Managers {
             foreach (var teleportAlias in TeleporterPluginMain.Config.AliasList) {
                 var result = matchPartial && teleportAlias.Alias.Contains(name, StringComparison.OrdinalIgnoreCase);
                 if (!result && !teleportAlias.Alias.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (!AetheryteManager.AvailableAetherytes.Any(i => teleportAlias.Equals(i)))
                     continue;
                 alias = teleportAlias;
                 return true;
