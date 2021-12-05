@@ -74,7 +74,7 @@ namespace TeleporterPlugin.Managers {
                     if (gcTicket == 0)
                         return;
 
-                    var cnt = TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), gcTicket, 0, 0, 0, 0);
+                    var cnt = InventoryManager.Instance()->GetInventoryItemCount(gcTicket);
                     if (cnt < 1) {
                         TeleporterPluginMain.LogChat("You do not have the required GC Tickets.", true);
                         return;
@@ -90,7 +90,7 @@ namespace TeleporterPlugin.Managers {
             if (TeleporterPluginMain.Config.EnableEternityRing 
                 && arg.Equals(TeleporterPluginMain.Config.EternityRingAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
-                    var cnt = TeleporterPluginMain.Address.GetInventoryItemCount(InventoryManager.Instance(), 8575, 0, 1, 1, 0);
+                    var cnt = InventoryManager.Instance()->GetInventoryItemCount(8575);
                     if (cnt < 1) {
                         TeleporterPluginMain.LogChat("You do not have the Eternity Ring.", true);
                         return;
