@@ -25,10 +25,12 @@ namespace TeleporterPlugin.Plugin {
             Address.Setup(SigScanner);
             AetheryteManager.Load();
             CommandManager.Load();
-
+            
             Config = Configuration.Load();
             if (Config.UseEnglish)
                 AetheryteManager.Load();
+
+            IpcManager.Register(PluginInterface);
 
             PluginInterface.UiBuilder.Draw += OnDraw;
             PluginInterface.UiBuilder.OpenConfigUi += OnOpenConfigUi;
@@ -55,6 +57,7 @@ namespace TeleporterPlugin.Plugin {
 
         public void Dispose() {
             Config.Save();
+            IpcManager.Unregister();
             CommandManager.UnLoad();
             PluginInterface.UiBuilder.Draw -= OnDraw;
             PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUi;
