@@ -6,12 +6,12 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 
 namespace TeleporterPlugin.Managers {
     public static unsafe class IpcManager {
-        private static ICallGateProvider<uint, byte, bool>? m_CallGate;
-
+        private static ICallGateProvider<uint, byte, bool>? m_CallGateTp;
+        
         public static void Register(DalamudPluginInterface pluginInterface) {
             Unregister();
-            m_CallGate = pluginInterface.GetIpcProvider<uint, byte, bool>("Teleporter");
-            m_CallGate.RegisterFunc(IpcTeleport);
+            m_CallGateTp = pluginInterface.GetIpcProvider<uint, byte, bool>("Teleport");
+            m_CallGateTp.RegisterFunc(IpcTeleport);
         }
 
         private static bool IpcTeleport(uint aetheryteId, byte subIndex) {
@@ -25,8 +25,8 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static void Unregister() {
-            m_CallGate?.UnregisterFunc();
-            m_CallGate = null;
+            m_CallGateTp?.UnregisterFunc();
+            m_CallGateTp = null;
         }
     }
 }
