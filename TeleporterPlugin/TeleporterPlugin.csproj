@@ -7,7 +7,7 @@
   <DebugType>Full</DebugType>
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-  <AssemblyVersion>2.0.1.4</AssemblyVersion>
+  <AssemblyVersion>2.0.1.5</AssemblyVersion>
  </PropertyGroup>
 
  <PropertyGroup>
@@ -15,7 +15,7 @@
  </PropertyGroup>
 
  <ItemGroup>
-  <PackageReference Include="DalamudPackager" Version="2.1.5" />
+  <PackageReference Include="DalamudPackager" Version="2.1.6" />
 
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
