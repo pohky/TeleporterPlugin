@@ -12,7 +12,7 @@
  </PropertyGroup>
 
  <PropertyGroup>
-  <Dalamud>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</Dalamud>
+  <DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
  </PropertyGroup>
 
  <ItemGroup>
@@ -21,10 +21,10 @@
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
 
-  <Reference Include="Dalamud" HintPath="$(Dalamud)Dalamud.dll" Private="False" />
-  <Reference Include="ImGui.NET" HintPath="$(Dalamud)ImGui.NET.dll" Private="False" />
-  <Reference Include="Lumina" HintPath="$(Dalamud)Lumina.dll" Private="False" />
-  <Reference Include="Lumina.Excel" HintPath="$(Dalamud)Lumina.Excel.dll" Private="False" />
-  <Reference Include="FFXIVClientStructs" HintPath="$(Dalamud)FFXIVClientStructs.dll" Private="False" />
+  <Reference Include="Dalamud" HintPath="$(DalamudLibPath)Dalamud.dll" Private="False" />
+  <Reference Include="ImGui.NET" HintPath="$(DalamudLibPath)ImGui.NET.dll" Private="False" />
+  <Reference Include="Lumina" HintPath="$(DalamudLibPath)Lumina.dll" Private="False" />
+  <Reference Include="Lumina.Excel" HintPath="$(DalamudLibPath)Lumina.Excel.dll" Private="False" />
+  <Reference Include="FFXIVClientStructs" HintPath="$(DalamudLibPath)FFXIVClientStructs.dll" Private="False" />
  </ItemGroup>
 </Project>
