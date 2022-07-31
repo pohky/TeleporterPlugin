@@ -7,7 +7,8 @@
   <DebugType>Full</DebugType>
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-  <AssemblyVersion>2.0.1.7</AssemblyVersion>
+  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  <AssemblyVersion>2.0.1.8</AssemblyVersion>
  </PropertyGroup>
 
  <PropertyGroup>
