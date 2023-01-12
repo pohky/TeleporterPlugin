@@ -2,6 +2,7 @@
 using System.Linq;
 using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.GeneratedSheets;
 using TeleporterPlugin.Plugin;
 
@@ -63,7 +64,7 @@ namespace TeleporterPlugin.Managers {
             if (TeleporterPluginMain.Config.EnableGrandCompany &&
                 arg.Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
-                    var gc = *(byte*)TeleporterPluginMain.Address.GrandCompanyAddress;
+	                var gc = PlayerState.Instance()->GrandCompany;
                     if (gc == 0) return;
                     uint gcTicket = gc switch {
                         1 => 21069, //Maelstrom
