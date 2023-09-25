@@ -16,7 +16,7 @@
  </PropertyGroup>
 
  <ItemGroup>
-  <PackageReference Include="DalamudPackager" Version="2.1.10" />
+  <PackageReference Include="DalamudPackager" Version="2.1.12" />
 
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Lumina.Excel.GeneratedSheets;
@@ -87,7 +86,7 @@ namespace TeleporterPlugin.Managers {
                 return true;
             } catch(Exception ex) {
                 AvailableAetherytes.Clear();
-                PluginLog.LogError(ex, "Error while Updating the Aetheryte List");
+                TeleporterPluginMain.PluginLog.Error(ex, "Error while Updating the Aetheryte List");
             }
             return false;
         }
