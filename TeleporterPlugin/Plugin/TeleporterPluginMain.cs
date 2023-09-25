@@ -1,8 +1,6 @@
-﻿using Dalamud.Data;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.Gui;
-using Dalamud.IoC;
+﻿using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using TeleporterPlugin.Gui;
 using TeleporterPlugin.Managers;
 
@@ -11,11 +9,11 @@ namespace TeleporterPlugin.Plugin {
         public string Name => "Teleporter";
 
         [PluginService] public static DalamudPluginInterface PluginInterface { get; set; } = null!;
-        [PluginService] public static DataManager Data { get; set; } = null!;
-        [PluginService] public static ClientState ClientState { get; set; } = null!;
-        [PluginService] public static Dalamud.Game.Command.CommandManager Commands { get; set; } = null!;
-        [PluginService] public static ChatGui Chat { get; set; } = null!;
-
+        [PluginService] public static IDataManager Data { get; set; } = null!;
+        [PluginService] public static IClientState ClientState { get; set; } = null!;
+        [PluginService] public static ICommandManager Commands { get; set; } = null!;
+        [PluginService] public static IChatGui Chat { get; set; } = null!;
+        [PluginService] public static IPluginLog PluginLog { get; set; } = null!;
         public static Configuration Config { get; set; } = new();
 
         public TeleporterPluginMain() {
