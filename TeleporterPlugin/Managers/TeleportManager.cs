@@ -8,7 +8,7 @@ namespace TeleporterPlugin.Managers {
         public static bool Teleport(TeleportInfo info) {
             if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return false;
-            var status = ActionManager.Instance()->GetActionStatus(ActionType.Spell, 5);
+            var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, 5);
             if (status != 0) {
                 var msg = GetLogMessage(status);
                 if (!string.IsNullOrEmpty(msg))
@@ -29,7 +29,7 @@ namespace TeleporterPlugin.Managers {
         public static bool Teleport(TeleportAlias alias) {
             if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return false;
-            var status = ActionManager.Instance()->GetActionStatus(ActionType.Spell, 5);
+            var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, 5);
             if (status != 0) {
                 var msg = GetLogMessage(status);
                 if(!string.IsNullOrEmpty(msg))

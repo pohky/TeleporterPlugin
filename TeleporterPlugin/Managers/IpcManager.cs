@@ -29,7 +29,7 @@ namespace TeleporterPlugin.Managers {
                 return false;
             if (!AetheryteManager.AvailableAetherytes.Any(tp => tp.AetheryteId == aetheryteId && tp.SubIndex == subIndex))
                 return false;
-            if (ActionManager.Instance()->GetActionStatus(ActionType.Spell, 5) != 0)
+            if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 5) != 0)
                 return false;
             return Telepo.Instance()->Teleport(aetheryteId, subIndex);
         }
