@@ -9,12 +9,10 @@ using TeleporterPlugin.Plugin;
 namespace TeleporterPlugin.Managers {
     public static class CommandManager {
         public static void Load() {
-            TeleporterPluginMain.Commands.RemoveHandler("/tp");
             TeleporterPluginMain.Commands.AddHandler("/tp", new CommandInfo(CommandHandler) {
                 ShowInHelp = true,
                 HelpMessage = "/tp <aetheryte name> - Teleport to aetheryte (use just '/tp' to open the Config)"
             });
-            TeleporterPluginMain.Commands.RemoveHandler("/tpm");
             TeleporterPluginMain.Commands.AddHandler("/tpm", new CommandInfo(CommandHandlerMaps) {
                 ShowInHelp = true,
                 HelpMessage = "/tpm <map name> - Teleport to map"

@@ -8,7 +8,7 @@
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-  <AssemblyVersion>2.0.2.2</AssemblyVersion>
+  <AssemblyVersion>2.0.2.3</AssemblyVersion>
  </PropertyGroup>
 
  <PropertyGroup>
