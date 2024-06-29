@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Dalamud;
+using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Lumina.Excel.GeneratedSheets;
@@ -92,7 +93,7 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static string GetAetheryteName(TeleportInfo info) {
-            if (info.IsAppartment)
+            if (info.IsApartment)
                 return m_AppartmentName ??= GetAppartmentName();
             if (info.IsSharedHouse) {
                 if (m_HouseNames.TryGetValue((info.Ward, info.Plot), out var house))
@@ -106,7 +107,7 @@ namespace TeleporterPlugin.Managers {
         }
 
         private static unsafe string GetAppartmentName() {
-            var tm = Framework.Instance()->GetUiModule()->GetRaptureTextModule();
+            var tm = Framework.Instance()->GetUIModule()->GetRaptureTextModule();
             var sp = tm->GetAddonText(8518);
             var name = Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? string.Empty;
             return TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
@@ -114,8 +115,8 @@ namespace TeleporterPlugin.Managers {
 
         private static unsafe string GetSharedHouseName(int ward, int plot) {
             if (ward > 30) return $"SHARED_HOUSE_W{ward}_P{plot}";
-            var tm = Framework.Instance()->GetUiModule()->GetRaptureTextModule();
-            var sp = tm->FormatAddonText2(8519, ward, plot);
+            var tm = Framework.Instance()->GetUIModule()->GetRaptureTextModule();
+            var sp = tm->FormatAddonText2IntInt(8519, ward, plot);
             return Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? $"SHARED_HOUSE_W{ward}_P{plot}";
         }
 
