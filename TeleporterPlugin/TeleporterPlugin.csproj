@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-  <TargetFramework>net7-windows</TargetFramework>
+  <TargetFramework>net8-windows</TargetFramework>
   <PlatformTarget>x64</PlatformTarget>
   <Nullable>enable</Nullable>
   <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -8,7 +8,7 @@
   <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-  <AssemblyVersion>2.0.2.3</AssemblyVersion>
+  <AssemblyVersion>2.0.2.4</AssemblyVersion>
  </PropertyGroup>
 
  <PropertyGroup>
@@ -16,7 +16,7 @@
  </PropertyGroup>
 
  <ItemGroup>
-  <PackageReference Include="DalamudPackager" Version="2.1.12" />
+  <PackageReference Include="DalamudPackager" Version="2.1.13" />
 
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />

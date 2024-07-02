@@ -6,7 +6,7 @@ using TeleporterPlugin.Managers;
 
 namespace TeleporterPlugin.Plugin {
     public sealed class TeleporterPluginMain : IDalamudPlugin {
-        [PluginService] public static DalamudPluginInterface PluginInterface { get; set; } = null!;
+        [PluginService] public static IDalamudPluginInterface PluginInterface { get; set; } = null!;
         [PluginService] public static IDataManager Data { get; set; } = null!;
         [PluginService] public static IClientState ClientState { get; set; } = null!;
         [PluginService] public static ICommandManager Commands { get; set; } = null!;
