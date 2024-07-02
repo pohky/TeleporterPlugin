@@ -10,7 +10,7 @@ namespace TeleporterPlugin.Managers {
         private static ICallGateProvider<uint, byte, bool>? m_CallGateTp;
         private static ICallGateProvider<bool>? m_CallGateTpMessage;
         
-        public static void Register(DalamudPluginInterface pluginInterface) {
+        public static void Register(IDalamudPluginInterface pluginInterface) {
             Unregister();
             
             m_CallGateTp = pluginInterface.GetIpcProvider<uint, byte, bool>("Teleport");
