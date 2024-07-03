@@ -82,8 +82,8 @@ namespace TeleporterPlugin.Managers {
                 if (tp->UpdateAetheryteList() == null) 
                     return false;
                 AvailableAetherytes.Clear();
-                for (ulong i = 0; i < tp->TeleportList.Size(); i++)
-                    AvailableAetherytes.Add(tp->TeleportList.Get(i));
+                for (long i = 0; i < tp->TeleportList.LongCount; i++)
+                    AvailableAetherytes.Add(tp->TeleportList[i]);
                 return true;
             } catch(Exception ex) {
                 AvailableAetherytes.Clear();
