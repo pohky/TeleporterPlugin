@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -16,7 +16,7 @@ namespace TeleporterPlugin.Managers {
                 return false;
             }
 
-            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.Id != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.Id) {
+            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.RowId != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.RowId) {
                 if (AetheryteManager.IsHousingAetheryte(info.AetheryteId, info.Plot, info.Ward, info.SubIndex)) {
                     TeleporterPluginMain.LogChat($"Unable to Teleport to {AetheryteManager.GetAetheryteName(info)} while visiting other Worlds.", true);
                     return false;
@@ -37,7 +37,7 @@ namespace TeleporterPlugin.Managers {
                 return false;
             }
 
-            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.Id != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.Id) {
+            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.RowId != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.RowId) {
                 if (AetheryteManager.IsHousingAetheryte(alias.AetheryteId, alias.Plot, alias.Ward, alias.SubIndex)) {
                     TeleporterPluginMain.LogChat($"Unable to Teleport to {alias.Aetheryte} while visiting other Worlds.", true);
                     return false;
@@ -49,8 +49,8 @@ namespace TeleporterPlugin.Managers {
         private static string GetLogMessage(uint id) {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<LogMessage>();
             if (sheet == null) return string.Empty;
-            var row = sheet.GetRow(id);
-            return row == null ? string.Empty : row.Text.ToString();
+            var row = sheet.GetRow(id).ToString();
+            return row == null ? string.Empty : row;
         }
     }
 }
