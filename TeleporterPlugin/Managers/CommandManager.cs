@@ -3,7 +3,7 @@ using System.Linq;
 using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -133,7 +133,7 @@ namespace TeleporterPlugin.Managers {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<GrandCompany>();
             var row = sheet?.GetRow(id);
             if (row == null) return false;
-            name = row.Name.ToString();
+            name = row.Value.Name.ToString();
             return !string.IsNullOrEmpty(name);
         }
 

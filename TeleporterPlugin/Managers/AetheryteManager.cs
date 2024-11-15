@@ -6,7 +6,7 @@ using Dalamud;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -124,7 +124,7 @@ namespace TeleporterPlugin.Managers {
             var list = new List<uint>(10);
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(ClientLanguage.English)!;
             foreach (var aetheryte in sheet) {
-                if (aetheryte.PlaceName.Row is 1145 or 1160)
+                if (aetheryte.PlaceName.RowId is 1145 or 1160)
                     list.Add(aetheryte.RowId);
             }
             array = list.ToArray();
@@ -134,7 +134,7 @@ namespace TeleporterPlugin.Managers {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
-                var name = row.PlaceName.Value?.Name?.ToString();
+                var name = row.PlaceName.ValueNullable?.Name.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
                 name = TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
@@ -146,7 +146,7 @@ namespace TeleporterPlugin.Managers {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
-                var name = row.Territory.Value?.PlaceName.Value?.Name?.ToString();
+                var name = row.Territory.ValueNullable?.PlaceName.ValueNullable?.Name.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
                 if (row is not { IsAetheryte: true }) continue;
