@@ -6,7 +6,7 @@ using Dalamud;
 using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -57,14 +57,14 @@ namespace TeleporterPlugin.Managers {
                 var aetheryteName = GetAetheryteName(tpInfo);
 
                 var result = matchPartial && aetheryteName.Contains(name, StringComparison.OrdinalIgnoreCase);
-                if(!result && !aetheryteName.Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (!result && !aetheryteName.Equals(name, StringComparison.OrdinalIgnoreCase))
                     continue;
                 info = tpInfo;
                 return true;
             }
             return false;
         }
-        
+
         public static string GetAetheryteName(TeleportAlias alias) {
             return GetAetheryteName(new TeleportInfo {
                 AetheryteId = alias.AetheryteId,
@@ -79,13 +79,13 @@ namespace TeleporterPlugin.Managers {
                 return false;
             try {
                 var tp = Telepo.Instance();
-                if (tp->UpdateAetheryteList() == null) 
+                if (tp->UpdateAetheryteList() == null)
                     return false;
                 AvailableAetherytes.Clear();
                 for (long i = 0; i < tp->TeleportList.LongCount; i++)
                     AvailableAetherytes.Add(tp->TeleportList[i]);
                 return true;
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 AvailableAetherytes.Clear();
                 TeleporterPluginMain.PluginLog.Error(ex, "Error while Updating the Aetheryte List");
             }
@@ -124,7 +124,7 @@ namespace TeleporterPlugin.Managers {
             var list = new List<uint>(10);
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(ClientLanguage.English)!;
             foreach (var aetheryte in sheet) {
-                if (aetheryte.PlaceName.Row is 1145 or 1160)
+                if (aetheryte.PlaceName.RowId is 1145 or 1160)
                     list.Add(aetheryte.RowId);
             }
             array = list.ToArray();
@@ -134,7 +134,7 @@ namespace TeleporterPlugin.Managers {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
-                var name = row.PlaceName.Value?.Name?.ToString();
+                var name = row.PlaceName.ValueNullable?.Name.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
                 name = TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
@@ -146,7 +146,7 @@ namespace TeleporterPlugin.Managers {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
             dict.Clear();
             foreach (var row in sheet) {
-                var name = row.Territory.Value?.PlaceName.Value?.Name?.ToString();
+                var name = row.Territory.ValueNullable?.PlaceName.Value.Name.ToString();
                 if (string.IsNullOrEmpty(name))
                     continue;
                 if (row is not { IsAetheryte: true }) continue;

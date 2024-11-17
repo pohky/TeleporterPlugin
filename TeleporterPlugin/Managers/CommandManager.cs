@@ -3,7 +3,7 @@ using System.Linq;
 using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -54,15 +54,15 @@ namespace TeleporterPlugin.Managers {
                 return;
             }
 
-            if(TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
                 return;
 
             AetheryteManager.UpdateAvailableAetherytes();
-            
+
             if (TeleporterPluginMain.Config.EnableGrandCompany &&
                 arg.Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
-	                var gc = PlayerState.Instance()->GrandCompany;
+                    var gc = PlayerState.Instance()->GrandCompany;
                     if (gc == 0) return;
                     uint gcTicket = gc switch {
                         1 => 21069, //Maelstrom
@@ -86,7 +86,7 @@ namespace TeleporterPlugin.Managers {
                 }
             }
 
-            if (TeleporterPluginMain.Config.EnableEternityRing 
+            if (TeleporterPluginMain.Config.EnableEternityRing
                 && arg.Equals(TeleporterPluginMain.Config.EternityRingAlias, StringComparison.OrdinalIgnoreCase)) {
                 unsafe {
                     var cnt = InventoryManager.Instance()->GetInventoryItemCount(8575);
@@ -131,8 +131,7 @@ namespace TeleporterPlugin.Managers {
             name = string.Empty;
             if (id == 0) return false;
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<GrandCompany>();
-            var row = sheet?.GetRow(id);
-            if (row == null) return false;
+            var row = sheet.GetRow(id);
             name = row.Name.ToString();
             return !string.IsNullOrEmpty(name);
         }
