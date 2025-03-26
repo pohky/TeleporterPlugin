@@ -1,30 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Dalamud.Net.Sdk/12.0.1">
  <PropertyGroup>
-  <TargetFramework>net8-windows</TargetFramework>
-  <PlatformTarget>x64</PlatformTarget>
-  <Nullable>enable</Nullable>
-  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   <DebugType>Full</DebugType>
-  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-  <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-  <AssemblyVersion>2.0.2.5</AssemblyVersion>
- </PropertyGroup>
-
- <PropertyGroup>
-  <DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+  <AssemblyVersion>2.0.2.6</AssemblyVersion>
+  <Platforms>x64</Platforms>
  </PropertyGroup>
 
  <ItemGroup>
-  <PackageReference Include="DalamudPackager" Version="11.0.0" />
-
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
-
-  <Reference Include="Dalamud" HintPath="$(DalamudLibPath)Dalamud.dll" Private="False" />
-  <Reference Include="ImGui.NET" HintPath="$(DalamudLibPath)ImGui.NET.dll" Private="False" />
-  <Reference Include="Lumina" HintPath="$(DalamudLibPath)Lumina.dll" Private="False" />
-  <Reference Include="Lumina.Excel" HintPath="$(DalamudLibPath)Lumina.Excel.dll" Private="False" />
-  <Reference Include="FFXIVClientStructs" HintPath="$(DalamudLibPath)FFXIVClientStructs.dll" Private="False" />
  </ItemGroup>
 </Project>
