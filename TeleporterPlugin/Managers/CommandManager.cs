@@ -81,7 +81,7 @@ namespace TeleporterPlugin.Managers {
 
                 var gcName = TryGetGrandCompanyName(gc, out var name) ? name : $"GrandCompany{gc}";
                 TeleporterPluginMain.LogChat($"Teleporting to {gcName}.");
-                ActionManager.Instance()->UseAction(ActionType.Item, gcTicket, 0xE000_0000, 65535);
+                ActionManager.Instance()->UseAction(ActionType.Item, gcTicket, 0xE000_0000, ushort.MaxValue);
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace TeleporterPlugin.Managers {
                 var result = matchPartial && teleportAlias.Alias.Contains(name, StringComparison.OrdinalIgnoreCase);
                 if (!result && !teleportAlias.Alias.Equals(name, StringComparison.OrdinalIgnoreCase))
                     continue;
-                if (!AetheryteManager.AvailableAetherytes.Any(i => teleportAlias.Equals(i)))
+                if (!AetheryteManager.AvailableAetherytes.Any(teleportAlias.Equals))
                     continue;
                 alias = teleportAlias;
                 return true;

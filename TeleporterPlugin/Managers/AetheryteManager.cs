@@ -1,7 +1,7 @@
 ﻿using Dalamud.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -107,16 +107,14 @@ namespace TeleporterPlugin.Managers {
         }
 
         private static unsafe string GetAppartmentName() {
-            var tm = Framework.Instance()->GetUIModule()->GetRaptureTextModule();
-            var sp = tm->GetAddonText(8518);
+            var sp = RaptureTextModule.Instance()->GetAddonText(8518);
             var name = Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? string.Empty;
             return TeleporterPluginMain.PluginInterface.Sanitizer.Sanitize(name);
         }
 
         private static unsafe string GetSharedHouseName(int ward, int plot) {
             if (ward > 30) return $"SHARED_HOUSE_W{ward}_P{plot}";
-            var tm = Framework.Instance()->GetUIModule()->GetRaptureTextModule();
-            var sp = tm->FormatAddonText2IntInt(8519, ward, plot);
+            var sp = RaptureTextModule.Instance()->FormatAddonText2IntInt(8519, ward, plot);
             return Marshal.PtrToStringUTF8(new IntPtr(sp)) ?? $"SHARED_HOUSE_W{ward}_P{plot}";
         }
 

@@ -10,6 +10,7 @@ namespace TeleporterPlugin.Managers {
             var localPlayer = Control.GetLocalPlayer();
             if (localPlayer == null)
                 return false;
+
             var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, 5);
             if (status != 0) {
                 var msg = GetLogMessage(status);
@@ -18,11 +19,10 @@ namespace TeleporterPlugin.Managers {
                 return false;
             }
 
-            if (localPlayer->CurrentWorld != localPlayer->HomeWorld) {
-                if (AetheryteManager.IsHousingAetheryte(info.AetheryteId, info.Plot, info.Ward, info.SubIndex)) {
-                    TeleporterPluginMain.LogChat($"Unable to Teleport to {AetheryteManager.GetAetheryteName(info)} while visiting other Worlds.", true);
-                    return false;
-                }
+            if (localPlayer->CurrentWorld != localPlayer->HomeWorld
+                && AetheryteManager.IsHousingAetheryte(info.AetheryteId, info.Plot, info.Ward, info.SubIndex)) {
+                TeleporterPluginMain.LogChat($"Unable to Teleport to {AetheryteManager.GetAetheryteName(info)} while visiting other Worlds.", true);
+                return false;
             }
 
             return Telepo.Instance()->Teleport(info.AetheryteId, info.SubIndex);
@@ -32,6 +32,7 @@ namespace TeleporterPlugin.Managers {
             var localPlayer = Control.GetLocalPlayer();
             if (localPlayer == null)
                 return false;
+
             var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, 5);
             if (status != 0) {
                 var msg = GetLogMessage(status);
@@ -40,12 +41,12 @@ namespace TeleporterPlugin.Managers {
                 return false;
             }
 
-            if (localPlayer->CurrentWorld != localPlayer->HomeWorld) {
-                if (AetheryteManager.IsHousingAetheryte(alias.AetheryteId, alias.Plot, alias.Ward, alias.SubIndex)) {
-                    TeleporterPluginMain.LogChat($"Unable to Teleport to {alias.Aetheryte} while visiting other Worlds.", true);
-                    return false;
-                }
+            if (localPlayer->CurrentWorld != localPlayer->HomeWorld
+                && AetheryteManager.IsHousingAetheryte(alias.AetheryteId, alias.Plot, alias.Ward, alias.SubIndex)) {
+                TeleporterPluginMain.LogChat($"Unable to Teleport to {alias.Aetheryte} while visiting other Worlds.", true);
+                return false;
             }
+
             return Telepo.Instance()->Teleport(alias.AetheryteId, alias.SubIndex);
         }
 
