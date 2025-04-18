@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Dalamud;
-using Dalamud.Game;
+﻿using Dalamud.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using Lumina.Excel.Sheets;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -75,7 +75,7 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static unsafe bool UpdateAvailableAetherytes() {
-            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (Control.GetLocalPlayer() == null)
                 return false;
             try {
                 var tp = Telepo.Instance();

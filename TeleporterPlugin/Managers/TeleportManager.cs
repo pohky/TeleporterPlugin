@@ -1,4 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using TeleporterPlugin.Plugin;
@@ -6,7 +7,8 @@ using TeleporterPlugin.Plugin;
 namespace TeleporterPlugin.Managers {
     public static unsafe class TeleportManager {
         public static bool Teleport(TeleportInfo info) {
-            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
+            var localPlayer = Control.GetLocalPlayer();
+            if (localPlayer == null)
                 return false;
             var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, 5);
             if (status != 0) {
@@ -16,7 +18,7 @@ namespace TeleporterPlugin.Managers {
                 return false;
             }
 
-            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.RowId != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.RowId) {
+            if (localPlayer->CurrentWorld != localPlayer->HomeWorld) {
                 if (AetheryteManager.IsHousingAetheryte(info.AetheryteId, info.Plot, info.Ward, info.SubIndex)) {
                     TeleporterPluginMain.LogChat($"Unable to Teleport to {AetheryteManager.GetAetheryteName(info)} while visiting other Worlds.", true);
                     return false;
@@ -27,7 +29,8 @@ namespace TeleporterPlugin.Managers {
         }
 
         public static bool Teleport(TeleportAlias alias) {
-            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
+            var localPlayer = Control.GetLocalPlayer();
+            if (localPlayer == null)
                 return false;
             var status = ActionManager.Instance()->GetActionStatus(ActionType.Action, 5);
             if (status != 0) {
@@ -37,7 +40,7 @@ namespace TeleporterPlugin.Managers {
                 return false;
             }
 
-            if (TeleporterPluginMain.ClientState.LocalPlayer.CurrentWorld.RowId != TeleporterPluginMain.ClientState.LocalPlayer.HomeWorld.RowId) {
+            if (localPlayer->CurrentWorld != localPlayer->HomeWorld) {
                 if (AetheryteManager.IsHousingAetheryte(alias.AetheryteId, alias.Plot, alias.Ward, alias.SubIndex)) {
                     TeleporterPluginMain.LogChat($"Unable to Teleport to {alias.Aetheryte} while visiting other Worlds.", true);
                     return false;
