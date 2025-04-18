@@ -1,9 +1,10 @@
-﻿using System;
-using System.Linq;
-using Dalamud.Game.Command;
+﻿using Dalamud.Game.Command;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
+using System;
+using System.Linq;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
@@ -24,13 +25,13 @@ namespace TeleporterPlugin.Managers {
             TeleporterPluginMain.Commands.RemoveHandler("/tpm");
         }
 
-        private static void CommandHandlerMaps(string cmd, string arg) {
+        private unsafe static void CommandHandlerMaps(string cmd, string arg) {
             if (string.IsNullOrEmpty(arg)) {
                 TeleporterPluginMain.OnOpenConfigUi();
                 return;
             }
 
-            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (Control.GetLocalPlayer() == null)
                 return;
 
             AetheryteManager.UpdateAvailableAetherytes();
@@ -46,7 +47,7 @@ namespace TeleporterPlugin.Managers {
             TeleportManager.Teleport(info);
         }
 
-        private static void CommandHandler(string cmd, string arg) {
+        private unsafe static void CommandHandler(string cmd, string arg) {
             arg = CleanArgument(arg);
 
             if (string.IsNullOrEmpty(arg)) {
@@ -54,50 +55,46 @@ namespace TeleporterPlugin.Managers {
                 return;
             }
 
-            if (TeleporterPluginMain.ClientState.LocalPlayer == null)
+            if (Control.GetLocalPlayer() == null)
                 return;
 
             AetheryteManager.UpdateAvailableAetherytes();
 
             if (TeleporterPluginMain.Config.EnableGrandCompany &&
                 arg.Equals(TeleporterPluginMain.Config.GrandCompanyAlias, StringComparison.OrdinalIgnoreCase)) {
-                unsafe {
-                    var gc = PlayerState.Instance()->GrandCompany;
-                    if (gc == 0) return;
-                    uint gcTicket = gc switch {
-                        1 => 21069, //Maelstrom
-                        2 => 21070, //Order of the Twin Adder
-                        3 => 21071, //Immortal Flames
-                        _ => 0
-                    };
-                    if (gcTicket == 0)
-                        return;
+                var gc = PlayerState.Instance()->GrandCompany;
+                if (gc == 0) return;
+                uint gcTicket = gc switch {
+                    1 => 21069, //Maelstrom
+                    2 => 21070, //Order of the Twin Adder
+                    3 => 21071, //Immortal Flames
+                    _ => 0
+                };
+                if (gcTicket == 0)
+                    return;
 
-                    var cnt = InventoryManager.Instance()->GetInventoryItemCount(gcTicket);
-                    if (cnt < 1) {
-                        TeleporterPluginMain.LogChat("You do not have the required GC Tickets.", true);
-                        return;
-                    }
-
-                    var gcName = TryGetGrandCompanyName(gc, out var name) ? name : $"GrandCompany{gc}";
-                    TeleporterPluginMain.LogChat($"Teleporting to {gcName}.");
-                    ActionManager.Instance()->UseAction(ActionType.Item, gcTicket, 0xE000_0000, 65535);
+                var cnt = InventoryManager.Instance()->GetInventoryItemCount(gcTicket);
+                if (cnt < 1) {
+                    TeleporterPluginMain.LogChat("You do not have the required GC Tickets.", true);
                     return;
                 }
+
+                var gcName = TryGetGrandCompanyName(gc, out var name) ? name : $"GrandCompany{gc}";
+                TeleporterPluginMain.LogChat($"Teleporting to {gcName}.");
+                ActionManager.Instance()->UseAction(ActionType.Item, gcTicket, 0xE000_0000, ushort.MaxValue);
+                return;
             }
 
             if (TeleporterPluginMain.Config.EnableEternityRing
                 && arg.Equals(TeleporterPluginMain.Config.EternityRingAlias, StringComparison.OrdinalIgnoreCase)) {
-                unsafe {
-                    var cnt = InventoryManager.Instance()->GetInventoryItemCount(8575);
-                    if (cnt < 1) {
-                        TeleporterPluginMain.LogChat("You do not have the Eternity Ring.", true);
-                        return;
-                    }
-                    TeleporterPluginMain.LogChat("Teleporting to Partner.");
-                    ActionManager.Instance()->UseAction(ActionType.Item, 8575, 0xE000_0000, ushort.MaxValue);
+                var cnt = InventoryManager.Instance()->GetInventoryItemCount(8575);
+                if (cnt < 1) {
+                    TeleporterPluginMain.LogChat("You do not have the Eternity Ring.", true);
                     return;
                 }
+                TeleporterPluginMain.LogChat("Teleporting to Partner.");
+                ActionManager.Instance()->UseAction(ActionType.Item, 8575, 0xE000_0000, ushort.MaxValue);
+                return;
             }
 
             if (TryFindAliasByName(arg, TeleporterPluginMain.Config.AllowPartialAlias, out var alias)) {
@@ -143,7 +140,7 @@ namespace TeleporterPlugin.Managers {
                 var result = matchPartial && teleportAlias.Alias.Contains(name, StringComparison.OrdinalIgnoreCase);
                 if (!result && !teleportAlias.Alias.Equals(name, StringComparison.OrdinalIgnoreCase))
                     continue;
-                if (!AetheryteManager.AvailableAetherytes.Any(i => teleportAlias.Equals(i)))
+                if (!AetheryteManager.AvailableAetherytes.Any(teleportAlias.Equals))
                     continue;
                 alias = teleportAlias;
                 return true;
