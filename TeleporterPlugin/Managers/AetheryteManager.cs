@@ -5,20 +5,19 @@ using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using TeleporterPlugin.Plugin;
 
 namespace TeleporterPlugin.Managers {
     public static class AetheryteManager {
-        public static readonly Dictionary<uint, string> AetheryteNames = new(150);
-        public static readonly Dictionary<uint, string> TerritoryNames = new(80);
-        private static readonly Dictionary<(int, int), string> m_HouseNames = new(5);
+        private static readonly Dictionary<uint, string> AetheryteNames = new(150);
+        private static readonly Dictionary<uint, string> TerritoryNames = new(80);
+        private static readonly Dictionary<(int, int), string> HouseNames = new(5);
         private static string? m_AppartmentName;
 
         public static readonly List<TeleportInfo> AvailableAetherytes = new(80);
 
-        private static uint[] m_EstateIds = { 0 };
+        private static uint[] m_EstateIds = [0];
 
         public static void Load() {
             var lang = TeleporterPluginMain.Config.UseEnglish ? ClientLanguage.English : TeleporterPluginMain.ClientState.ClientLanguage;
@@ -96,14 +95,14 @@ namespace TeleporterPlugin.Managers {
             if (info.IsApartment)
                 return m_AppartmentName ??= GetAppartmentName();
             if (info.IsSharedHouse) {
-                if (m_HouseNames.TryGetValue((info.Ward, info.Plot), out var house))
+                if (HouseNames.TryGetValue((info.Ward, info.Plot), out var house))
                     return house;
                 house = GetSharedHouseName(info.Ward, info.Plot);
-                m_HouseNames.Add((info.Ward, info.Plot), house);
+                HouseNames.Add((info.Ward, info.Plot), house);
                 return house;
             }
 
-            return AetheryteNames.TryGetValue(info.AetheryteId, out var name) ? name : "NO_DATA";
+            return AetheryteNames.GetValueOrDefault(info.AetheryteId, "NO_DATA");
         }
 
         private static unsafe string GetAppartmentName() {
@@ -120,7 +119,7 @@ namespace TeleporterPlugin.Managers {
 
         private static void SetupEstateIds(out uint[] array) {
             var list = new List<uint>(10);
-            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(ClientLanguage.English)!;
+            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(ClientLanguage.English);
             foreach (var aetheryte in sheet) {
                 if (aetheryte.PlaceName.RowId is 1145 or 1160)
                     list.Add(aetheryte.RowId);
@@ -128,8 +127,8 @@ namespace TeleporterPlugin.Managers {
             array = list.ToArray();
         }
 
-        private static void SetupAetherytes(IDictionary<uint, string> dict, ClientLanguage language) {
-            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
+        private static void SetupAetherytes(Dictionary<uint, string> dict, ClientLanguage language) {
+            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language);
             dict.Clear();
             foreach (var row in sheet) {
                 var name = row.PlaceName.ValueNullable?.Name.ToString();
@@ -140,8 +139,8 @@ namespace TeleporterPlugin.Managers {
             }
         }
 
-        private static void SetupMaps(IDictionary<uint, string> dict, ClientLanguage language) {
-            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language)!;
+        private static void SetupMaps(Dictionary<uint, string> dict, ClientLanguage language) {
+            var sheet = TeleporterPluginMain.Data.GetExcelSheet<Aetheryte>(language);
             dict.Clear();
             foreach (var row in sheet) {
                 var name = row.Territory.ValueNullable?.PlaceName.Value.Name.ToString();

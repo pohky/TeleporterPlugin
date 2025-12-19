@@ -21,7 +21,7 @@ namespace TeleporterPlugin {
         public bool EnableEternityRing = false;
         public string EternityRingAlias = "ring";
         
-        public List<TeleportAlias> AliasList = new();
+        public List<TeleportAlias> AliasList = [];
 
         #region Helper
 

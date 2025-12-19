@@ -25,7 +25,7 @@ namespace TeleporterPlugin.Managers {
             TeleporterPluginMain.Commands.RemoveHandler("/tpm");
         }
 
-        private unsafe static void CommandHandlerMaps(string cmd, string arg) {
+        private static unsafe void CommandHandlerMaps(string cmd, string arg) {
             if (string.IsNullOrEmpty(arg)) {
                 TeleporterPluginMain.OnOpenConfigUi();
                 return;
@@ -47,7 +47,7 @@ namespace TeleporterPlugin.Managers {
             TeleportManager.Teleport(info);
         }
 
-        private unsafe static void CommandHandler(string cmd, string arg) {
+        private static unsafe void CommandHandler(string cmd, string arg) {
             arg = CleanArgument(arg);
 
             if (string.IsNullOrEmpty(arg)) {

@@ -52,7 +52,6 @@ namespace TeleporterPlugin.Managers {
 
         private static string GetLogMessage(uint id) {
             var sheet = TeleporterPluginMain.Data.GetExcelSheet<LogMessage>();
-            if (sheet == null) return string.Empty;
             var row = sheet.GetRow(id);
             return row.Text.ToString();
         }
