@@ -1,4 +1,4 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/14.0.1">
+﻿<Project Sdk="Dalamud.NET.Sdk/15.0.0">
  <PropertyGroup>
   <DebugType>Full</DebugType>
   <AssemblyVersion>2.0.2.9</AssemblyVersion>
@@ -7,5 +7,10 @@
  <ItemGroup>
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
+ </ItemGroup>
+
+ <ItemGroup>
+   <PackageReference Update="DalamudPackager" Version="15.0.0" />
+   <PackageReference Update="DotNet.ReproducibleBuilds" Version="2.0.2" />
  </ItemGroup>
 </Project>
