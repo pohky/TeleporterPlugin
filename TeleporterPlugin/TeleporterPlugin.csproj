@@ -8,9 +8,4 @@
   <Content Include="images\icon.png" CopyToOutputDirectory="Always" />
   <Content Include="TeleporterPlugin.json" CopyToOutputDirectory="Always" />
  </ItemGroup>
-
- <ItemGroup>
-   <PackageReference Update="DalamudPackager" Version="15.0.0" />
-   <PackageReference Update="DotNet.ReproducibleBuilds" Version="2.0.2" />
- </ItemGroup>
 </Project>
