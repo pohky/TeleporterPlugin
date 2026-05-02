@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/15.0.0">
  <PropertyGroup>
   <DebugType>Full</DebugType>
-  <AssemblyVersion>2.0.2.9</AssemblyVersion>
+  <AssemblyVersion>2.0.3.0</AssemblyVersion>
  </PropertyGroup>
 
  <ItemGroup>
